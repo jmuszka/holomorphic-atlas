@@ -18,13 +18,13 @@ function App() {
 
     let vertices = [
       0.0, 0.0, 0.0, // origin
-      1.0, 0.0, 0.0, // right midpoint
-      -1.0, 0.0, 0.0, // left midpoint
-      0.0, 1.0, 0.0, // top midpoint 
-      0.0, -1.0, 0.0, // bottom midpoint
+      -1.0, 1.0, 0.0, // top left
+      1.0, 1.0, 0.0, // top right
+      -1.0, -1.0, 0.0, // bottom left
+      1.0, -1.0, 0.0, // botton right
     ]
 
-    let indices = [0, 2, 3]
+    let indices = [1, 2, 3, 2, 3, 4]
 
     let vb = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vb);
@@ -47,8 +47,30 @@ function App() {
     gl.compileShader(vs);
 
     let fsSource =
+      'precision highp float;' +
+      'uniform vec2 u_resolution;' +
+
       'void main(void) {' +
-        ' gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);' +
+        'vec4 coords = vec4(2.0*gl_FragCoord.x/u_resolution.x - 1.0, 2.0*gl_FragCoord.y/u_resolution.y - 1.0, 0.0, 1.0);' +
+        'coords = vec4(coords.x*(16.0/9.0), coords.yzw);' +
+
+        'float x0 = coords.x; float y0 = coords.y;' +
+        'float x = 0.0; float y = 0.0; float iteration = 0.0;' +
+
+        'for (int i = 0; i < 10000; i++) {' +
+          'if (x*x + y*y > 4.0) break;' +
+          'float xtemp = x*x - y*y + x0;' +
+          'y = 2.0*x*y + y0;' +
+          'x = xtemp;' +
+          'iteration++;' +
+        '}' +
+
+        `vec4 color;` +
+        'if (iteration >= 10000.0) color = vec4(0.0, 0.0, 0.0, 1.0);' +
+        'else if (iteration >= 50.0) color = vec4(1.0, 1.0, 0.0, 1.0);' +
+        'else color = vec4(0.0, 0.0, 1.0, 1.0);' +
+
+        'gl_FragColor = color;' +
       '}';
     let fs = gl.createShader(gl.FRAGMENT_SHADER);
     gl.shaderSource(fs, fsSource);
@@ -66,11 +88,14 @@ function App() {
     gl.vertexAttribPointer(coordinates, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(coordinates);
 
+    let uResLoc = gl.getUniformLocation(shaderProgram, 'u_resolution');
+    gl.uniform2f(uResLoc, canvas.width, canvas.height);
+
     gl.clearColor(0.5, 0.5, 1.0, 0.9);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
-  }, [])
+  }, [size])
 
   return (
     <canvas
