@@ -1,12 +1,10 @@
 import { useRef, useEffect, useState } from 'react';
 
 function App() {
+  const [fidelity, setFidelity] = useState(1.0);
   const canvasRef = useRef(null);
-  const [size, setSize] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
 
+  // OpenGL rendering
   useEffect(() => {
     const canvas = canvasRef.current;
     const gl = canvas.getContext('webgl');
@@ -52,7 +50,7 @@ function App() {
 
       'void main(void) {' +
         'vec4 coords = vec4(2.0*gl_FragCoord.x/u_resolution.x - 1.0, 2.0*gl_FragCoord.y/u_resolution.y - 1.0, 0.0, 1.0);' +
-        'coords = vec4(coords.x*(16.0/9.0), coords.yzw);' +
+        `coords = vec4(coords.x*(${window.innerWidth/window.innerHeight}), coords.yzw);` +
 
         'float x0 = coords.x; float y0 = coords.y;' +
         'float x = 0.0; float y = 0.0; float iteration = 0.0;' +
@@ -95,13 +93,14 @@ function App() {
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
-  }, [size])
+  }, [])
 
   return (
     <canvas
       ref={canvasRef}
-      width={size.width}
-      height={size.height}
+      width={fidelity*window.innerHeight}
+      height={fidelity*window.innerWidth}
+      className={`w-screen h-screen`}
     />
   )
 }
