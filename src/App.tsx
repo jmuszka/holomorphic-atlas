@@ -1,13 +1,25 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useLayoutEffect } from 'react';
 import vertexShaderSource from './shaders/vertex.glsl?url'
-import fragmentShaderSource from './shaders/fragment.glsl?url'
+import mbFragShaderSource from './shaders/mandelbrot_frag.glsl?url'
+import jFragShaderSource from './shaders/julia_frag.glsl?url'
 
 function App() {
   const [fidelity, setFidelity] = useState(1.0);
+  const [mousePos, setMousePos] = useState({
+    x: 0,
+    y: 0,
+  });
+  const [dynamic, setDynamic] = useState(false);
   const canvasRef = useRef(null);
+  const miniCanvasRef = useRef(null);
+  const [config, setConfig] = useState({
+    main: "Mandelbrot",
+    mini: "Julia",
+  })
 
-  const render = async () => {
-    const canvas = canvasRef.current;
+  const render = async (ref, type) => {
+    
+    const canvas = ref.current;
     const gl = canvas.getContext('webgl');
 
     if (!gl) {
@@ -40,7 +52,7 @@ function App() {
     gl.shaderSource(vs, vsSource);
     gl.compileShader(vs);
 
-    let fsSource = await fetch(fragmentShaderSource).then(res => res.text())
+    let fsSource = await fetch(type === "Mandelbrot" ? mbFragShaderSource : jFragShaderSource).then(res => res.text())
     let fs = gl.createShader(gl.FRAGMENT_SHADER);
     gl.shaderSource(fs, fsSource);
     gl.compileShader(fs);
@@ -63,6 +75,9 @@ function App() {
     let uRatioLoc = gl.getUniformLocation(shaderProgram, 'u_ratio');
     gl.uniform1f(uRatioLoc, window.innerWidth/window.innerHeight);
 
+    let uZ0Loc = gl.getUniformLocation(shaderProgram, 'u_z0');
+    gl.uniform2f(uZ0Loc, mousePos.x, mousePos.y);
+
     gl.clearColor(0.5, 0.5, 1.0, 0.9);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -71,16 +86,60 @@ function App() {
 
   // OpenGL rendering
   useEffect(() => {
-    render();
-  }, [])
+    render(canvasRef, config.main);
+    render(miniCanvasRef, config.mini);
+  }, [mousePos, config]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={fidelity*window.innerHeight}
-      height={fidelity*window.innerWidth}
-      className={`w-screen h-screen`}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        width={fidelity*window.innerHeight}
+        height={fidelity*window.innerWidth}
+        className="w-screen h-screen"
+        onClick={() => {
+          setDynamic(!dynamic);
+          console.log(dynamic)
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+
+          setConfig({
+            main: config.mini,
+            mini: config.main,
+          })
+        }}
+        onMouseMove={(e) => {
+          const pos = {
+            x: (2*e.clientX - window.innerWidth)/window.innerWidth,
+            y: (window.innerHeight - 2*e.clientY)/window.innerHeight,
+          }
+
+          const coords = {
+            x: 2.0*pos.x,
+            y: pos.y,
+          }
+
+          if (dynamic) setMousePos(coords);
+        }}
+      />
+
+      <canvas
+        ref={miniCanvasRef}
+        width={window.innerWidth/5.0}
+        height={window.innertHeight/4.0}
+        className="fixed bottom-0 right-0 outline-solid m-3"
+      />
+
+      <div className="fixed top-0 left-0">
+        <p>{`${config.main === "Mandelbrot" ? "z_0" : "c"}: ${mousePos.x.toFixed(3)} ${mousePos.y >= 0 ? "+" : "-"} ${Math.abs(mousePos.y.toFixed(3))}i`}</p>
+        <p>Dynamic: {dynamic ? "ON" : "OFF"}</p>
+      </div>
+
+      <div className="fixed top-0 left-0 w-full text-center text-2xl">
+        {config.main}
+      </div>
+    </>
   )
 }
 
