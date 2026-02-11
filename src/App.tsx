@@ -3,19 +3,42 @@ import vertexShaderSource from './shaders/vertex.glsl?url'
 import mbFragShaderSource from './shaders/mandelbrot_frag.glsl?url'
 import jFragShaderSource from './shaders/julia_frag.glsl?url'
 
+enum Set {
+  MANDELBROT = "Mandelbrot",
+  JULIA = "Julia",
+}
+
+type MapState = {
+  view: {
+    main: Set,
+    mini: Set,
+  },
+  fidelity: number,
+  point: {
+    re: number,
+    im: number,
+  },
+  dynamic: boolean,
+}
+
+const defaultState: MapState = {
+  view: {
+    main: Set.MANDELBROT,
+    mini: Set.JULIA,
+  },
+  fidelity: 1.0,
+  point: {
+    re: 0.0,
+    im: 0.0,
+  },
+  dynamic: false,
+}
+
 function App() {
-  const [fidelity, setFidelity] = useState(1.0);
-  const [mousePos, setMousePos] = useState({
-    x: 0,
-    y: 0,
-  });
-  const [dynamic, setDynamic] = useState(false);
   const canvasRef = useRef(null);
   const miniCanvasRef = useRef(null);
-  const [config, setConfig] = useState({
-    main: "Mandelbrot",
-    mini: "Julia",
-  })
+
+  const [state, setState] = useState<MapState>(defaultState);
 
   const render = async (ref, type) => {
     
@@ -52,7 +75,7 @@ function App() {
     gl.shaderSource(vs, vsSource);
     gl.compileShader(vs);
 
-    let fsSource = await fetch(type === "Mandelbrot" ? mbFragShaderSource : jFragShaderSource).then(res => res.text())
+    let fsSource = await fetch(type === Set.MANDELBROT ? mbFragShaderSource : jFragShaderSource).then(res => res.text())
     let fs = gl.createShader(gl.FRAGMENT_SHADER);
     gl.shaderSource(fs, fsSource);
     gl.compileShader(fs);
@@ -76,7 +99,7 @@ function App() {
     gl.uniform1f(uRatioLoc, window.innerWidth/window.innerHeight);
 
     let uZ0Loc = gl.getUniformLocation(shaderProgram, 'u_z0');
-    gl.uniform2f(uZ0Loc, mousePos.x, mousePos.y);
+    gl.uniform2f(uZ0Loc, state.point.re, state.point.im);
 
     gl.clearColor(0.5, 0.5, 1.0, 0.9);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -86,58 +109,71 @@ function App() {
 
   // OpenGL rendering
   useEffect(() => {
-    render(canvasRef, config.main);
-    render(miniCanvasRef, config.mini);
-  }, [mousePos, config]);
+    render(canvasRef, state.view.main);
+    render(miniCanvasRef, state.view.mini);
+  }, [state]);
 
   return (
     <>
       <canvas
         ref={canvasRef}
-        width={fidelity*window.innerHeight}
-        height={fidelity*window.innerWidth}
+        width={state.fidelity*window.innerHeight}
+        height={state.fidelity*window.innerWidth}
         className="w-screen h-screen"
         onClick={() => {
-          setDynamic(!dynamic);
-          console.log(dynamic)
+          setState({
+            ...state,
+            dynamic: !state.dynamic,
+          });
         }}
         onContextMenu={(e) => {
           e.preventDefault();
 
-          setConfig({
-            main: config.mini,
-            mini: config.main,
+          // Swap canvases
+          setState({
+            ...state,
+            view: {
+              main: state.view.mini,
+              mini: state.view.main,
+            }
           })
         }}
         onMouseMove={(e) => {
+          // TODO: clear conversion between mouse coords to point on argand plane
+
           const pos = {
             x: (2*e.clientX - window.innerWidth)/window.innerWidth,
             y: (window.innerHeight - 2*e.clientY)/window.innerHeight,
           }
 
           const coords = {
-            x: 2.0*pos.x,
-            y: pos.y,
+            re: 2.0*pos.x,
+            im: pos.y,
           }
 
-          if (dynamic) setMousePos(coords);
+          if (state.dynamic) setState({
+            ...state,
+            point: coords,
+          });
         }}
       />
 
+      <div className="fixed bottom-0 right-0 outline-solid m-3 bg-red-500">
+      <p className="absolute -top-6 text-center w-full">{state.view.mini}</p>
       <canvas
         ref={miniCanvasRef}
         width={window.innerWidth/5.0}
         height={window.innertHeight/4.0}
-        className="fixed bottom-0 right-0 outline-solid m-3"
       />
+      </div>
 
       <div className="fixed top-0 left-0">
-        <p>{`${config.main === "Mandelbrot" ? "z_0" : "c"}: ${mousePos.x.toFixed(3)} ${mousePos.y >= 0 ? "+" : "-"} ${Math.abs(mousePos.y.toFixed(3))}i`}</p>
-        <p>Dynamic: {dynamic ? "ON" : "OFF"}</p>
+        <p>{`${state.view.main === Set.MANDELBROT ? "z_0" : "c"}: ${state.point.re.toFixed(3)} ${state.point.im >= 0 ? "+" : "-"} ${Math.abs(state.point.im.toFixed(3))}i`}</p>
+        <p>Dynamic: {state.dynamic ? "ON" : "OFF"}</p>
       </div>
 
       <div className="fixed top-0 left-0 w-full text-center text-2xl">
-        {config.main}
+        {state.view.main}
       </div>
     </>
   )
