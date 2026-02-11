@@ -1,25 +1,9 @@
 import { useRef, useEffect, useState, useLayoutEffect } from 'react';
+import Set from './types/set'
+import MapState from './types/map-state'
 import vertexShaderSource from './shaders/vertex.glsl?url'
 import mbFragShaderSource from './shaders/mandelbrot_frag.glsl?url'
 import jFragShaderSource from './shaders/julia_frag.glsl?url'
-
-enum Set {
-  MANDELBROT = "Mandelbrot",
-  JULIA = "Julia",
-}
-
-type MapState = {
-  view: {
-    main: Set,
-    mini: Set,
-  },
-  fidelity: number,
-  point: {
-    re: number,
-    im: number,
-  },
-  dynamic: boolean,
-}
 
 const defaultState: MapState = {
   view: {
@@ -34,7 +18,7 @@ const defaultState: MapState = {
   dynamic: false,
 }
 
-function App() {
+const App = () => {
   const canvasRef = useRef(null);
   const miniCanvasRef = useRef(null);
 
@@ -159,24 +143,22 @@ function App() {
       />
 
       <div className="fixed bottom-0 right-0 outline-solid m-3 bg-red-500">
-      <p className="absolute -top-6 text-center w-full">{state.view.mini}</p>
-      <canvas
-        ref={miniCanvasRef}
-        width={window.innerWidth/5.0}
-        height={window.innertHeight/4.0}
-      />
+        <p className="absolute -top-6 w-full text-center">View: <b>{state.view.mini}</b></p>
+        <canvas
+          ref={miniCanvasRef}
+          width={window.innerWidth/5.0}
+          height={window.innertHeight/4.0}
+        />
       </div>
 
-      <div className="fixed top-0 left-0">
-        <p>{`${state.view.main === Set.MANDELBROT ? "z_0" : "c"}: ${state.point.re.toFixed(3)} ${state.point.im >= 0 ? "+" : "-"} ${Math.abs(state.point.im.toFixed(3))}i`}</p>
-        <p>Dynamic: {state.dynamic ? "ON" : "OFF"}</p>
-      </div>
-
-      <div className="fixed top-0 left-0 w-full text-center text-2xl">
-        {state.view.main}
+      <div className="fixed top-0 left-0 bg-gray-500/80 p-3 m-1 rounded-xl">
+        <p>View: <b>{state.view.main}</b></p>
+        <p>Fidelity: <b>{state.fidelity.toFixed(1)}</b></p>
+        <p>Point: <b>{state.point.re.toFixed(3)} {state.point.im >= 0 ? "+" : "-"} {Math.abs(state.point.im).toFixed(3)}i</b></p>
+        <p>Dynamic: <b>{state.dynamic.toString()}</b></p>
       </div>
     </>
   )
 }
 
-export default App
+export default App;
