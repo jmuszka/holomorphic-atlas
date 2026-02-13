@@ -1,17 +1,17 @@
-import Set from '../types/set'
+import Set from "../types/set";
 
 type MapState = {
   view: {
-    main: Set,
-    mini: Set,
-  },
-  fidelity: number,
+    main: Set;
+    mini: Set;
+  };
+  fidelity: number;
   point: {
-    re: number,
-    im: number,
-  },
-  dynamic: boolean,
-}
+    re: number;
+    im: number;
+  };
+  dynamic: boolean;
+};
 
 export const defaultState: MapState = {
   view: {
@@ -24,28 +24,28 @@ export const defaultState: MapState = {
     im: 0.0,
   },
   dynamic: false,
-}
+};
 
 export const loadURLState: MapState = () => {
-    const encodedState = (new URL(window.location.href)).searchParams.get('state');
-    
+  const encodedState = new URL(window.location.href).searchParams.get("state");
+
   if (!encodedState) {
     return defaultState;
   }
 
   const decodedState = JSON.parse(atob(encodedState));
 
-  // TODO: validation 
+  // TODO: validation
 
   return decodedState;
-}
+};
 
 export const updateURLState = (state: MapState) => {
   const encodedState = btoa(JSON.stringify(state));
 
   const url = new URL(window.location.href);
-  url.searchParams.set('state', encodedState);
-  window.history.replaceState(null, '', url.toString());
-}
+  url.searchParams.set("state", encodedState);
+  window.history.replaceState(null, "", url.toString());
+};
 
 export default MapState;
