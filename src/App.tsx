@@ -103,13 +103,9 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    console.log(state);
-
     // OpenGL rendering
     render(canvasRef, state.view.main);
     render(miniCanvasRef, state.view.mini);
-
-    updateURLState(state);
   }, [state]);
 
   return (
@@ -191,6 +187,21 @@ const App = () => {
           Hint: Left-click to toggle dynamic <br />
           rendering; right-click to toggle view.
         </p>
+        <br />
+
+        <div className="flex flex-row justify-around w-full">
+          <button onClick={() => {
+            setState(defaultState);
+            updateURLState(null);           
+          }}>
+            Reset
+          </button>
+          <button onClick={() => {
+            updateURLState(state);
+          }}>
+            Save
+          </button>
+        </div>
       </div>
     </>
   );

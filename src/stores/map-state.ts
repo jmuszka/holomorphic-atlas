@@ -40,11 +40,13 @@ export const loadURLState: MapState = () => {
   return decodedState;
 };
 
-export const updateURLState = (state: MapState) => {
-  const encodedState = btoa(JSON.stringify(state));
+export const updateURLState = (state: MapState|null) => {
+  const encodedState = btoa(JSON.stringify(state || {}));
 
   const url = new URL(window.location.href);
-  url.searchParams.set("state", encodedState);
+  if (state) url.searchParams.set("state", encodedState);
+  else url.searchParams.delete("state");
+
   window.history.replaceState(null, "", url.toString());
 };
 
