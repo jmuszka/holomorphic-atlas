@@ -161,7 +161,6 @@ const App = () => {
         <canvas
           ref={miniCanvasRef}
           width={window.innerWidth / 5.0}
-          height={window.innertHeight / 4.0}
         />
       </div>
 
