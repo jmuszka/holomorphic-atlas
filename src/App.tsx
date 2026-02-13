@@ -1,28 +1,15 @@
 import { useRef, useEffect, useState, useLayoutEffect } from 'react';
 import Set from './types/set'
-import MapState from './types/map-state'
+import MapState, { defaultState, loadURLState, updateURLState } from './stores/map-state'
 import vertexShaderSource from './shaders/vertex.glsl?url'
 import mbFragShaderSource from './shaders/mandelbrot_frag.glsl?url'
 import jFragShaderSource from './shaders/julia_frag.glsl?url'
-
-const defaultState: MapState = {
-  view: {
-    main: Set.MANDELBROT,
-    mini: Set.JULIA,
-  },
-  fidelity: 1.0,
-  point: {
-    re: 0.0,
-    im: 0.0,
-  },
-  dynamic: false,
-}
 
 const App = () => {
   const canvasRef = useRef(null);
   const miniCanvasRef = useRef(null);
 
-  const [state, setState] = useState<MapState>(defaultState);
+  const [state, setState] = useState<MapState>(loadURLState());
 
   const render = async (ref, type) => {
     
@@ -91,10 +78,19 @@ const App = () => {
     gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
   }
 
-  // OpenGL rendering
+  // Init
+  useLayoutEffect(() => {
+    setState(loadURLState());
+  }, [])
+
   useEffect(() => {
+    console.log(state)
+
+    // OpenGL rendering
     render(canvasRef, state.view.main);
     render(miniCanvasRef, state.view.mini);
+
+    updateURLState(state);
   }, [state]);
 
   return (
@@ -142,7 +138,7 @@ const App = () => {
         }}
       />
 
-      <div className="fixed bottom-0 right-0 outline-solid m-3 bg-red-500">
+      <div className="fixed bottom-0 right-0 outline-solid m-3">
         <p className="absolute -top-6 w-full text-center">View: <b>{state.view.mini}</b></p>
         <canvas
           ref={miniCanvasRef}
@@ -156,6 +152,8 @@ const App = () => {
         <p>Fidelity: <b>{state.fidelity.toFixed(1)}</b></p>
         <p>Point: <b>{state.point.re.toFixed(3)} {state.point.im >= 0 ? "+" : "-"} {Math.abs(state.point.im).toFixed(3)}i</b></p>
         <p>Dynamic: <b>{state.dynamic.toString()}</b></p>
+        <br/>
+        <p className="text-xs">Hint: Left-click to toggle dynamic <br/>rendering; right-click to toggle view.</p>
       </div>
     </>
   )
