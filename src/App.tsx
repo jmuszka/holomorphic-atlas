@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useLayoutEffect } from "react";
 import Draggable from "react-draggable";
-import Set from "./types/set";
+import { Set } from "./types/set";
 import MapState, {
   defaultState,
   loadURLState,
@@ -169,7 +169,7 @@ const App = () => {
           ref={nodeRef}
           className="fixed top-0 left-0 bg-gray-500/80 px-5 py-3 m-1 rounded-xl shadow-lg border border-gray-400"
         >
-          <div className="drag-handle cursor-move bg-gray-600/50 hover:bg-gray-600 p-1 mb-2 rounded text-center text-[10px] uppercase tracking-widest font-bold">
+          <div className="drag-handle cursor-move bg-gray-600/50 bg-gray-600 p-1 mb-2 rounded text-center text-[10px] uppercase tracking-widest font-bold">
             :::
           </div>
           <p>

@@ -1,4 +1,4 @@
-import Set from "../types/set";
+import { Set } from "../types/set";
 
 type MapState = {
   view: {

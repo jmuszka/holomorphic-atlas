@@ -3,4 +3,4 @@ enum Set {
   JULIA = "Julia",
 }
 
-export default Set;
+export { Set }
