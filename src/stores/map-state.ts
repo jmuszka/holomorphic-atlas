@@ -40,7 +40,7 @@ export const loadURLState: MapState = () => {
   return decodedState;
 };
 
-export const updateURLState = (state: MapState|null) => {
+export const updateURLState = (state: MapState | null) => {
   const encodedState = btoa(JSON.stringify(state || {}));
 
   const url = new URL(window.location.href);

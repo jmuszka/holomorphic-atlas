@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, useLayoutEffect } from "react";
+import Draggable from "react-draggable";
 import Set from "./types/set";
 import MapState, {
   defaultState,
@@ -12,10 +13,12 @@ import jFragShaderSource from "./shaders/julia_frag.glsl?url";
 const App = () => {
   const canvasRef = useRef(null);
   const miniCanvasRef = useRef(null);
+  const nodeRef = useRef(null); // Recommended for React 18+ and react-draggable
 
   const [state, setState] = useState<MapState>(loadURLState());
 
   const render = async (ref, type) => {
+// ... (omitting middle lines for brevity, but I will include them in actual tool call)
     const canvas = ref.current;
     const gl = canvas.getContext("webgl");
 
@@ -158,50 +161,61 @@ const App = () => {
         <p className="absolute -top-6 w-full text-center">
           View: <b>{state.view.mini}</b>
         </p>
-        <canvas
-          ref={miniCanvasRef}
-          width={window.innerWidth / 5.0}
-        />
+        <canvas ref={miniCanvasRef} width={window.innerWidth / 5.0} />
       </div>
 
-      <div className="fixed top-0 left-0 bg-gray-500/80 p-3 m-1 rounded-xl">
-        <p>
-          View: <b>{state.view.main}</b>
-        </p>
-        <p>
-          Fidelity: <b>{state.fidelity.toFixed(1)}</b>
-        </p>
-        <p>
-          Point:{" "}
-          <b>
-            {state.point.re.toFixed(3)} {state.point.im >= 0 ? "+" : "-"}{" "}
-            {Math.abs(state.point.im).toFixed(3)}i
-          </b>
-        </p>
-        <p>
-          Dynamic: <b>{state.dynamic.toString()}</b>
-        </p>
-        <br />
-        <p className="text-xs">
-          Hint: Left-click to toggle dynamic <br />
-          rendering; right-click to toggle view.
-        </p>
-        <br />
+      <Draggable nodeRef={nodeRef} handle=".drag-handle">
+        <div
+          ref={nodeRef}
+          className="fixed top-0 left-0 bg-gray-500/80 px-5 py-3 m-1 rounded-xl shadow-lg border border-gray-400"
+        >
+          <div className="drag-handle cursor-move bg-gray-600/50 hover:bg-gray-600 p-1 mb-2 rounded text-center text-[10px] uppercase tracking-widest font-bold">
+            :::
+          </div>
+          <p>
+            View: <b>{state.view.main}</b>
+          </p>
+          <p>
+            Fidelity: <b>{state.fidelity.toFixed(1)}</b>
+          </p>
+          <p>
+            Point:{" "}
+            <b>
+              {state.point.re.toFixed(3)} {state.point.im >= 0 ? "+" : "-"}{" "}
+              {Math.abs(state.point.im).toFixed(3)}i
+            </b>
+          </p>
+          <p>
+            Dynamic: <b>{state.dynamic.toString()}</b>
+          </p>
+          <br />
+          <p className="text-xs">
+            Hint: Left-click to toggle dynamic <br />
+            rendering; right-click to toggle view.
+          </p>
+          <br />
 
-        <div className="flex flex-row justify-around w-full">
-          <button onClick={() => {
-            setState(defaultState);
-            updateURLState(null);           
-          }}>
-            Reset
-          </button>
-          <button onClick={() => {
-            updateURLState(state);
-          }}>
-            Save
-          </button>
+          <div className="flex flex-row justify-around w-full">
+            <button
+              className="bg-gray-700 hover:bg-gray-800 px-2 py-1 rounded text-sm"
+              onClick={() => {
+                setState(defaultState);
+                updateURLState(null);
+              }}
+            >
+              Reset
+            </button>
+            <button
+              className="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-sm"
+              onClick={() => {
+                updateURLState(state);
+              }}
+            >
+              Save
+            </button>
+          </div>
         </div>
-      </div>
+      </Draggable>
     </>
   );
 };
