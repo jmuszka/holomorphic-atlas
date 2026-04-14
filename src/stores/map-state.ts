@@ -1,6 +1,6 @@
 import { Set } from "../types/set";
 
-type MapState = {
+export type MapState = {
   view: {
     main: Set;
     mini: Set;
@@ -26,7 +26,7 @@ export const defaultState: MapState = {
   dynamic: false,
 };
 
-export const loadURLState: MapState = () => {
+export const loadURLState = (): MapState => {
   const encodedState = new URL(window.location.href).searchParams.get("state");
 
   if (!encodedState) {
@@ -49,5 +49,3 @@ export const updateURLState = (state: MapState | null) => {
 
   window.history.replaceState(null, "", url.toString());
 };
-
-export default MapState;

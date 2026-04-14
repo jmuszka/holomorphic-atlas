@@ -1,7 +1,8 @@
 import { useRef, useEffect, useState, useLayoutEffect } from "react";
 import Draggable from "react-draggable";
 import { Set } from "./types/set";
-import MapState, {
+import {
+  type MapState,
   defaultState,
   loadURLState,
   updateURLState,
@@ -13,12 +14,11 @@ import jFragShaderSource from "./shaders/julia_frag.glsl?url";
 const App = () => {
   const canvasRef = useRef(null);
   const miniCanvasRef = useRef(null);
-  const nodeRef = useRef(null); // Recommended for React 18+ and react-draggable
+  const nodeRef = useRef(null);
 
   const [state, setState] = useState<MapState>(loadURLState());
 
-  const render = async (ref, type) => {
-// ... (omitting middle lines for brevity, but I will include them in actual tool call)
+  const render = async (ref: React.RefObject<any>, type: Set) => {
     const canvas = ref.current;
     const gl = canvas.getContext("webgl");
 
