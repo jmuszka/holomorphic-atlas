@@ -1,4 +1,5 @@
 import { Set } from "../types/set";
+import { MousePosition } from "../utils/mouse";
 
 export type MapState = {
   view: {
@@ -6,10 +7,7 @@ export type MapState = {
     mini: Set;
   };
   fidelity: number;
-  point: {
-    re: number;
-    im: number;
-  };
+  position: MousePosition;
   dynamic: boolean;
 };
 
@@ -19,10 +17,10 @@ export const defaultState: MapState = {
     mini: Set.JULIA,
   },
   fidelity: 1.0,
-  point: {
-    re: 0.0,
-    im: 0.0,
-  },
+  position: new MousePosition(
+    window.innerWidth / 2.0,
+    window.innerHeight / 2.0,
+  ),
   dynamic: false,
 };
 
