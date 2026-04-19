@@ -1,10 +1,10 @@
-export class MousePosition {
+export class Position {
   private x: number;
   private y: number;
 
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
+  constructor(pos: { x: number; y: number }) {
+    this.x = pos.x;
+    this.y = pos.y;
   }
 
   getPosition(): { x: number; y: number } {

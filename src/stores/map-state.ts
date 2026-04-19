@@ -1,5 +1,5 @@
 import { Set } from "../types/set";
-import { MousePosition } from "../utils/mouse";
+import { Position } from "../utils/mouse";
 
 export type MapState = {
   view: {
@@ -7,7 +7,7 @@ export type MapState = {
     mini: Set;
   };
   fidelity: number;
-  position: MousePosition;
+  position: Position;
   dynamic: boolean;
 };
 
@@ -17,10 +17,10 @@ export const defaultState: MapState = {
     mini: Set.JULIA,
   },
   fidelity: 1.0,
-  position: new MousePosition(
-    window.innerWidth / 2.0,
-    window.innerHeight / 2.0,
-  ),
+  position: new Position({
+    x: window.innerWidth / 2.0,
+    y: window.innerHeight / 2.0,
+  }),
   dynamic: false,
 };
 
@@ -32,6 +32,7 @@ export const loadURLState = (): MapState => {
   }
 
   const decodedState = JSON.parse(atob(encodedState));
+  decodedState.position = new Position(decodedState.position); // necessary because typescript objects don't get encoded/decoded properly
 
   // TODO: validation
 

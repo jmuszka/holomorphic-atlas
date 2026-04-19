@@ -7,7 +7,7 @@ import {
   updateURLState,
 } from "./stores/map-state";
 import { render } from "./shaders/render";
-import { MousePosition } from "./utils/mouse";
+import { Position } from "./utils/mouse";
 
 const App = () => {
   const canvasRef = useRef(null);
@@ -39,7 +39,7 @@ const App = () => {
           setState({
             ...state,
             dynamic: !state.dynamic,
-            position: new MousePosition(e.clientX, e.clientY),
+            position: new Position({ x: e.clientX, y: e.clientY }),
           });
         }}
         onContextMenu={(e) => {
@@ -59,7 +59,7 @@ const App = () => {
           if (state.dynamic)
             setState({
               ...state,
-              position: new MousePosition(e.clientX, e.clientY),
+              position: new Position({ x: e.clientX, y: e.clientY }),
             });
         }}
       />
