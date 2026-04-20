@@ -4,6 +4,9 @@ import { type MapState } from "../stores/map-state";
 import vertexShaderSource from "./vertex.glsl?url";
 import fragShaderSource from "./frag.glsl?url";
 
+const vsSource = await fetch(vertexShaderSource).then((res) => res.text());
+const fsSource = await fetch(fragShaderSource).then((res) => res.text());
+
 export const render = async (
   ref: React.RefObject<any>,
   state: MapState,
@@ -51,13 +54,10 @@ export const render = async (
   );
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-  const vsSource = await fetch(vertexShaderSource).then((res) => res.text());
   let vs = gl.createShader(gl.VERTEX_SHADER);
   gl.shaderSource(vs, vsSource);
   gl.compileShader(vs);
 
-  // TODO: prefetch this for better performance
-  let fsSource = await fetch(fragShaderSource).then((res) => res.text());
   let fs = gl.createShader(gl.FRAGMENT_SHADER);
   gl.shaderSource(fs, fsSource);
   gl.compileShader(fs);
@@ -84,6 +84,16 @@ export const render = async (
     state.position.toArgand().im,
   );
 
+  let uOffsetLoc = gl.getUniformLocation(shaderProgram, "u_offset");
+  gl.uniform2f(
+    uOffsetLoc,
+    state.offset.toArgand().re,
+    state.offset.toArgand().im,
+  );
+
+  let uZoomLoc = gl.getUniformLocation(shaderProgram, "u_zoom");
+  gl.uniform1f(uZoomLoc, state.zoom);
+
   let uIsMandelbrotLoc = gl.getUniformLocation(
     shaderProgram,
     "u_is_mandelbrot",
@@ -93,7 +103,7 @@ export const render = async (
     (isMainView ? state.view.main : state.view.mini) === Set.MANDELBROT,
   );
 
-  // TODO: pass in the scale value; magic numbers are present
+  // TODO: pass in the scale / canvas ratio value; magic numbers are present
   let uIsMainViewLoc = gl.getUniformLocation(shaderProgram, "u_is_main_view");
   gl.uniform1i(uIsMainViewLoc, isMainView);
 

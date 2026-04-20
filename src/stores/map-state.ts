@@ -1,5 +1,5 @@
 import { Set } from "../types/set";
-import { Position } from "../utils/mouse";
+import { Position } from "../utils/position";
 
 export type MapState = {
   view: {
@@ -8,6 +8,8 @@ export type MapState = {
   };
   fidelity: number;
   position: Position;
+  offset: Position;
+  zoom: number;
   dynamic: boolean;
 };
 
@@ -21,6 +23,11 @@ export const defaultState: MapState = {
     x: window.innerWidth / 2.0,
     y: window.innerHeight / 2.0,
   }),
+  offset: new Position({
+    x: window.innerWidth / 2.0,
+    y: window.innerHeight / 2.0,
+  }),
+  zoom: 1.0,
   dynamic: false,
 };
 
@@ -33,6 +40,7 @@ export const loadURLState = (): MapState => {
 
   const decodedState = JSON.parse(atob(encodedState));
   decodedState.position = new Position(decodedState.position); // necessary because typescript objects don't get encoded/decoded properly
+  decodedState.offset = new Position(decodedState.offset); // necessary because typescript objects don't get encoded/decoded properly
 
   // TODO: validation
 

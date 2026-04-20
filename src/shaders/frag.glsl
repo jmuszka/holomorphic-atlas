@@ -1,6 +1,8 @@
 precision highp float;
 uniform vec2 u_resolution;
 uniform vec2 u_input;
+uniform vec2 u_offset;
+uniform float u_zoom;
 uniform int u_is_mandelbrot;
 uniform int u_is_main_view;
 
@@ -9,6 +11,10 @@ void main(void) {
   vec4 coords = vec4(2.0*gl_FragCoord.x/u_resolution.x - 1.0, 2.0*gl_FragCoord.y/u_resolution.y - 1.0, 0.0, 1.0);
   // Scale by display ratio to maintain 1:1 opengl to argand mapping
   coords = vec4(coords.x / (u_resolution.x / u_resolution.y) * (u_is_main_view == 1 ? 1.0 : 5.0), coords.yzw);
+  // Apply zoom 
+  coords = vec4(coords.x / u_zoom, coords.y / u_zoom, coords.zw);
+  // Offset coords 
+  coords = vec4(coords.x - u_offset.x, coords.y - u_offset.y, coords.zw);
 
   float x, y, x0, y0;
 

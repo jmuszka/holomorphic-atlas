@@ -7,7 +7,7 @@ import {
   updateURLState,
 } from "./stores/map-state";
 import { render } from "./shaders/render";
-import { Position } from "./utils/mouse";
+import { Position } from "./utils/position";
 
 const App = () => {
   const canvasRef = useRef(null);
@@ -15,6 +15,11 @@ const App = () => {
   const nodeRef = useRef(null);
 
   const [state, setState] = useState<MapState>(loadURLState());
+  const [mousePos, setMousePos] = useState<{ x: number; y: number }>({
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2,
+  });
+  const hasMovedRef = useRef(false);
 
   // Init
   useLayoutEffect(() => {
@@ -27,6 +32,31 @@ const App = () => {
     render(miniCanvasRef, state, false);
   }, [state]);
 
+  const updatePosition = async (pos: Position) => {
+    setState({
+      ...state,
+      position: pos,
+    });
+  };
+
+  const updateOffset = async (adjustment: Position) => {
+    // TODO: constraints
+    setState({
+      ...state,
+      offset: adjustment,
+    });
+  };
+
+  /*
+  const updateZoom = async (newZoom: number) => {
+    // TODO: constraints
+    setState({
+      ...state,
+      zoom: newZoom,
+    });
+  };
+  */
+
   return (
     <>
       <canvas
@@ -34,13 +64,21 @@ const App = () => {
         width={state.fidelity * window.innerHeight}
         height={state.fidelity * window.innerWidth}
         className="w-screen h-screen"
+        onMouseDown={() => {
+          hasMovedRef.current = false;
+        }}
         onClick={(e) => {
+          // TODO: pointer position needs to offsetted
+          if (hasMovedRef.current) return;
+
           // Toggle dynamic mode and update position
           setState({
             ...state,
             dynamic: !state.dynamic,
             position: new Position({ x: e.clientX, y: e.clientY }),
           });
+
+          // updatePosition(new Position({ x: e.clientX, y: e.clientY }));
         }}
         onContextMenu={(e) => {
           e.preventDefault();
@@ -55,12 +93,58 @@ const App = () => {
           });
         }}
         onMouseMove={(e) => {
-          // Update position
-          if (state.dynamic)
-            setState({
-              ...state,
-              position: new Position({ x: e.clientX, y: e.clientY }),
-            });
+          // Dragging
+          if (e.buttons !== 0) {
+            hasMovedRef.current = true;
+
+            // Update map offset with delta if user is dragging
+            // setState({
+            //  ...state,
+            //  offset: new Position({
+            //    x: state.offset.x + (e.clientX - mousePos.x) / state.zoom,
+            //    y: state.offset.y + (e.clientY - mousePos.y) / state.zoom,
+            //  }),
+            // });
+
+            // TODO: remove mousepos, should be able to just use state position
+            updateOffset(
+              new Position({
+                x:
+                  state.offset.getPosition().x +
+                  (e.clientX - mousePos.x) / state.zoom,
+                y:
+                  state.offset.getPosition().y +
+                  (e.clientY - mousePos.y) / state.zoom,
+              }),
+            );
+          }
+          // Not dragging
+          else {
+            // Update position (only if not dragging)
+            // if (state.dynamic)
+            //  setState({
+            //    ...state,
+            //    position: new Position({ x: e.clientX, y: e.clientY }),
+            //  });
+
+            if (state.dynamic)
+              updatePosition(new Position({ x: e.clientX, y: e.clientY }));
+          }
+
+          // Update mouse tracker
+          setMousePos({
+            x: e.clientX,
+            y: e.clientY,
+          });
+        }}
+        onWheel={(e) => {
+          const zoomDelta = e.deltaY / window.innerHeight;
+          const rate = 1.0;
+
+          setState({
+            ...state,
+            zoom: state.zoom + zoomDelta * rate,
+          });
         }}
       />
 
@@ -98,6 +182,9 @@ const App = () => {
             </b>
           </p>
           <p>
+            Zoom: <b>{state.zoom.toFixed(1)}</b>
+          </p>
+          <p>
             Dynamic: <b>{state.dynamic.toString()}</b>
           </p>
           <br />
@@ -128,6 +215,10 @@ const App = () => {
           </div>
         </div>
       </Draggable>
+      <p className="fixed z-10 left-1 bottom-0">
+        Offset: ({state.offset.toArgand().re.toFixed(3)},{" "}
+        {state.offset.toArgand().im.toFixed(3)})
+      </p>
     </>
   );
 };
