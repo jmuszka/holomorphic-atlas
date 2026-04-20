@@ -1,73 +1,57 @@
-# React + TypeScript + Vite
+# Holomorphic Atlas
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Holomorphic Atlas is an interactive fractal explorer built with **React**, **TypeScript**, and **OpenGL** (WebGL). It provides a real-time visualization of complex dynamics, specifically the **Mandelbrot set** and its corresponding **Julia sets**.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **High-Performance Rendering**: Utilizes custom GLSL fragment shaders for smooth, real-time fractal generation.
+- **Interactive Exploration**:
+  - **Mandelbrot & Julia Integration**: Toggle between the Mandelbrot set and Julia sets.
+  - **Dynamic Mode**: Watch the Julia set evolve as you move your mouse across the Mandelbrot set.
+  - **Navigation**: Intuitive zoom (scroll) and pan (drag) controls to explore the recursive fractal pattern.
+- **State Persistence**: Current view parameters (position, zoom, point) are saved in the URL, making it easy to share specific fractal configurations.
+- **Modern UI**: Includes a draggable control panel for real-time adjustments and state monitoring.
 
-## React Compiler
+## Getting Started
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+### Prerequisites
 
-## Expanding the ESLint configuration
+- [Node.js](https://nodejs.org/) (latest LTS recommended)
+- [npm](https://www.npmjs.com/) or [Bun](https://bun.sh/)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Installation
 
-```js
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
+1. Clone the repository.
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   bun install
+   ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Running the Project
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+To start the development server:
+
+```bash
+npm run dev
+# or
+bun run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The application will be available at `http://localhost:5173`.
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
+### Available Scripts
 
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
-```
+- `npm run dev`: Start the development server.
+- `npm run build`: Build the application for production.
+- `npm run lint`: Run ESLint to check for code quality.
+- `npm run format`: Format the codebase using Prettier.
+- `npm run preview`: Preview the production build locally.
+
+## Technical Details
+
+- **Frontend**: React 19 + Vite
+- **Shaders**: WebGL 1.0 (GLSL)
+- **Styling**: Tailwind CSS
+- **State Management**: Custom URL-based state sync
