@@ -8,6 +8,7 @@ import {
 } from "./stores/map-state";
 import { render, initGL, type GLContext } from "./shaders/render";
 import { Position } from "./utils/position";
+import { Download, Share2 } from 'lucide-react';
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -66,6 +67,19 @@ const App = () => {
     });
   };
   */
+
+  const exportPng = () => {
+    const canvas = canvasRef.current;
+    if (!canvas || !mainGLRef.current) return;
+
+    // Ensure the latest frame is rendered
+    render(mainGLRef.current, state, true);
+
+    const link = document.createElement("a");
+    link.download = `${state.view.main} Set.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
 
   return (
     <>
@@ -204,9 +218,9 @@ const App = () => {
           </p>
           <br />
 
-          <div className="flex flex-row justify-around w-full">
+          <div className="flex flex-row justify-around gap-1 w-full">
             <button
-              className="bg-gray-700 hover:bg-gray-800 px-2 py-1 rounded text-sm"
+              className="bg-gray-700 hover:bg-gray-800 rounded text-sm"
               onClick={() => {
                 setState(defaultState);
                 updateURLState(null);
@@ -215,12 +229,18 @@ const App = () => {
               Reset
             </button>
             <button
-              className="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-sm"
+              className="bg-blue-600 hover:bg-blue-700 rounded text-sm square"
               onClick={() => {
                 updateURLState(state);
               }}
             >
-              Save
+              <Share2 />
+            </button>
+            <button
+              className="bg-green-600 hover:bg-green-700 rounded text-sm"
+              onClick={exportPng}
+            >
+              <Download />
             </button>
           </div>
         </div>
