@@ -71,8 +71,8 @@ const App = () => {
     <>
       <canvas
         ref={canvasRef}
-        width={state.fidelity * window.innerHeight}
-        height={state.fidelity * window.innerWidth}
+        width={state.fidelity * window.innerWidth}
+        height={state.fidelity * window.innerHeight}
         className="w-screen h-screen"
         onMouseDown={() => {
           hasMovedRef.current = false;
