@@ -6,13 +6,16 @@ import {
   loadURLState,
   updateURLState,
 } from "./stores/map-state";
-import { render } from "./shaders/render";
+import { render, initGL, type GLContext } from "./shaders/render";
 import { Position } from "./utils/position";
 
 const App = () => {
-  const canvasRef = useRef(null);
-  const miniCanvasRef = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const miniCanvasRef = useRef<HTMLCanvasElement>(null);
   const nodeRef = useRef(null);
+
+  const mainGLRef = useRef<GLContext | null>(null);
+  const miniGLRef = useRef<GLContext | null>(null);
 
   const [state, setState] = useState<MapState>(loadURLState());
   const [mousePos, setMousePos] = useState<{ x: number; y: number }>({
@@ -28,8 +31,15 @@ const App = () => {
 
   // OpenGL rendering for each canvas
   useEffect(() => {
-    render(canvasRef, state, true);
-    render(miniCanvasRef, state, false);
+    if (canvasRef.current && !mainGLRef.current) {
+      mainGLRef.current = initGL(canvasRef.current);
+    }
+    if (miniCanvasRef.current && !miniGLRef.current) {
+      miniGLRef.current = initGL(miniCanvasRef.current);
+    }
+
+    if (mainGLRef.current) render(mainGLRef.current, state, true);
+    if (miniGLRef.current) render(miniGLRef.current, state, false);
   }, [state]);
 
   const updatePosition = async (pos: Position) => {

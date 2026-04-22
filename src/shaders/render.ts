@@ -7,108 +7,135 @@ import fragShaderSource from "./frag.glsl?url";
 const vsSource = await fetch(vertexShaderSource).then((res) => res.text());
 const fsSource = await fetch(fragShaderSource).then((res) => res.text());
 
-export const render = async (
-  ref: React.RefObject<any>,
-  state: MapState,
-  isMainView: boolean,
-) => {
-  const canvas = ref.current;
+export interface GLContext {
+  gl: WebGLRenderingContext;
+  program: WebGLProgram;
+  uniformLocations: {
+    resolution: WebGLUniformLocation;
+    input: WebGLUniformLocation;
+    offset: WebGLUniformLocation;
+    zoom: WebGLUniformLocation;
+    isMandelbrot: WebGLUniformLocation;
+    isMainView: WebGLUniformLocation;
+  };
+  buffers: {
+    vertex: WebGLBuffer;
+    index: WebGLBuffer;
+  };
+  indexCount: number;
+}
+
+export const initGL = (canvas: HTMLCanvasElement): GLContext | null => {
   const gl = canvas.getContext("webgl");
 
   if (!gl) {
     console.error("WebGL not supported");
-    return;
+    return null;
   }
 
-  let vertices = [
-    0.0,
-    0.0,
-    0.0, // origin
-    -1.0,
-    1.0,
-    0.0, // top left
-    1.0,
-    1.0,
-    0.0, // top right
-    -1.0,
-    -1.0,
-    0.0, // bottom left
-    1.0,
-    -1.0,
-    0.0, // botton right
+  const vertices = [
+    0.0, 0.0, 0.0, // origin
+    -1.0, 1.0, 0.0, // top left
+    1.0, 1.0, 0.0, // top right
+    -1.0, -1.0, 0.0, // bottom left
+    1.0, -1.0, 0.0, // botton right
   ];
 
-  let indices = [1, 2, 3, 2, 3, 4];
+  const indices = [1, 2, 3, 2, 3, 4];
 
-  let vb = gl.createBuffer();
+  const vb = gl.createBuffer();
+  if (!vb) return null;
   gl.bindBuffer(gl.ARRAY_BUFFER, vb);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-  gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-  let ib = gl.createBuffer();
+  const ib = gl.createBuffer();
+  if (!ib) return null;
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib);
   gl.bufferData(
     gl.ELEMENT_ARRAY_BUFFER,
     new Uint16Array(indices),
     gl.STATIC_DRAW,
   );
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-  let vs = gl.createShader(gl.VERTEX_SHADER);
+  const vs = gl.createShader(gl.VERTEX_SHADER);
+  if (!vs) return null;
   gl.shaderSource(vs, vsSource);
   gl.compileShader(vs);
 
-  let fs = gl.createShader(gl.FRAGMENT_SHADER);
+  const fs = gl.createShader(gl.FRAGMENT_SHADER);
+  if (!fs) return null;
   gl.shaderSource(fs, fsSource);
   gl.compileShader(fs);
 
-  let shaderProgram = gl.createProgram();
+  const shaderProgram = gl.createProgram();
+  if (!shaderProgram) return null;
   gl.attachShader(shaderProgram, vs);
   gl.attachShader(shaderProgram, fs);
   gl.linkProgram(shaderProgram);
-  gl.useProgram(shaderProgram);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, vb);
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib);
-  let coordinates = gl.getAttribLocation(shaderProgram, "coordinates");
+  const uniformLocations = {
+    resolution: gl.getUniformLocation(shaderProgram, "u_resolution")!,
+    input: gl.getUniformLocation(shaderProgram, "u_input")!,
+    offset: gl.getUniformLocation(shaderProgram, "u_offset")!,
+    zoom: gl.getUniformLocation(shaderProgram, "u_zoom")!,
+    isMandelbrot: gl.getUniformLocation(shaderProgram, "u_is_mandelbrot")!,
+    isMainView: gl.getUniformLocation(shaderProgram, "u_is_main_view")!,
+  };
+
+  return {
+    gl,
+    program: shaderProgram,
+    uniformLocations,
+    buffers: {
+      vertex: vb,
+      index: ib,
+    },
+    indexCount: indices.length,
+  };
+};
+
+export const render = (
+  glContext: GLContext,
+  state: MapState,
+  isMainView: boolean,
+) => {
+  const { gl, program, uniformLocations, buffers, indexCount } = glContext;
+  const canvas = gl.canvas as HTMLCanvasElement;
+
+  gl.useProgram(program);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffers.vertex);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.index);
+
+  const coordinates = gl.getAttribLocation(program, "coordinates");
   gl.vertexAttribPointer(coordinates, 3, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(coordinates);
 
-  let uResLoc = gl.getUniformLocation(shaderProgram, "u_resolution");
-  gl.uniform2f(uResLoc, canvas.width, canvas.height);
+  gl.uniform2f(uniformLocations.resolution, canvas.width, canvas.height);
 
-  let uZ0Loc = gl.getUniformLocation(shaderProgram, "u_input");
   gl.uniform2f(
-    uZ0Loc,
+    uniformLocations.input,
     state.position.toArgand().re,
     state.position.toArgand().im,
   );
 
-  let uOffsetLoc = gl.getUniformLocation(shaderProgram, "u_offset");
   gl.uniform2f(
-    uOffsetLoc,
+    uniformLocations.offset,
     state.offset.toArgand().re,
     state.offset.toArgand().im,
   );
 
-  let uZoomLoc = gl.getUniformLocation(shaderProgram, "u_zoom");
-  gl.uniform1f(uZoomLoc, state.zoom);
+  gl.uniform1f(uniformLocations.zoom, state.zoom);
 
-  let uIsMandelbrotLoc = gl.getUniformLocation(
-    shaderProgram,
-    "u_is_mandelbrot",
-  );
   gl.uniform1i(
-    uIsMandelbrotLoc,
-    (isMainView ? state.view.main : state.view.mini) === Set.MANDELBROT,
+    uniformLocations.isMandelbrot,
+    (isMainView ? state.view.main : state.view.mini) === Set.MANDELBROT ? 1 : 0,
   );
 
-  // TODO: pass in the scale / canvas ratio value; magic numbers are present
-  let uIsMainViewLoc = gl.getUniformLocation(shaderProgram, "u_is_main_view");
-  gl.uniform1i(uIsMainViewLoc, isMainView);
+  gl.uniform1i(uniformLocations.isMainView, isMainView ? 1 : 0);
 
   gl.clearColor(0.5, 0.5, 1.0, 0.9);
   gl.clear(gl.COLOR_BUFFER_BIT);
   gl.viewport(0, 0, canvas.width, canvas.height);
-  gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+  gl.drawElements(gl.TRIANGLES, indexCount, gl.UNSIGNED_SHORT, 0);
 };
