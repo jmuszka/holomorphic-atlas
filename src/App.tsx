@@ -8,7 +8,8 @@ import {
 } from "./stores/map-state";
 import { render, initGL, type GLContext } from "./shaders/render";
 import { Position } from "./utils/position";
-import { Download, Share2 } from "lucide-react";
+import { Download, Share2, Info, Bell, X } from "lucide-react";
+import InfoMenu from "./content/info-menu";
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -24,6 +25,24 @@ const App = () => {
     y: window.innerHeight / 2,
   });
   const hasMovedRef = useRef(false);
+
+  const [infoMenu, setInfoMenu] = useState<boolean>(false);
+  const [showToast, setShowToast] = useState<boolean>(false);
+
+  useEffect(() => {
+    const hasVisited = localStorage.getItem("hasVisited");
+    if (!hasVisited) {
+      localStorage.setItem("hasVisited", "true");
+      // Delay for 2 seconds before showing
+      const showTimer = setTimeout(() => setShowToast(true), 2000);
+      // Auto-hide toast after 10 seconds (2s delay + 8s visible)
+      const hideTimer = setTimeout(() => setShowToast(false), 10000);
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(hideTimer);
+      };
+    }
+  }, []);
 
   // OpenGL rendering for each canvas
   useEffect(() => {
@@ -71,13 +90,38 @@ const App = () => {
     render(mainGLRef.current, state, true);
 
     const link = document.createElement("a");
-    link.download = `${state.view.main} Set.png`;
+    link.download = `${state.view.main} Set (${new Date().toISOString()}).png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
   };
 
   return (
     <>
+      {showToast && (
+        <div className="fixed top-6 right-6 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="bg-gray-600/80 backdrop-blur-sm text-white px-6 py-4 rounded-xl shadow-lg border border-gray-400 flex items-start gap-4 max-w-sm">
+            <div className="bg-gray-600/50 p-2 rounded-lg mt-1">
+              <Bell size={20} />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-lg">New explorer?</h3>
+              <p className="text-sm text-gray-100 leading-snug mt-1">
+                Click the <Info size={14} className="inline mb-0.5" /> icon in
+                the control panel to see controls and learn the math!
+              </p>
+            </div>
+            <button
+              onClick={() => setShowToast(false)}
+              className="hover:bg-gray-600/50 p-1 rounded-lg transition-colors"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {infoMenu && <InfoMenu setInfoMenu={setInfoMenu} />}
+
       <canvas
         ref={canvasRef}
         width={state.fidelity * window.innerWidth}
@@ -158,7 +202,7 @@ const App = () => {
         }}
         onWheel={(e) => {
           const zoomDelta = e.deltaY / window.innerHeight;
-          const rate = 1.0;
+          const rate = state.zoom;
 
           setState({
             ...state,
@@ -181,7 +225,7 @@ const App = () => {
       <Draggable nodeRef={nodeRef} handle=".drag-handle">
         <div
           ref={nodeRef}
-          className="fixed top-0 left-0 bg-gray-500/80 px-5 py-3 m-1 rounded-xl shadow-lg border border-gray-400"
+          className="fixed top-0 left-0 bg-gray-600/80 px-5 py-3 m-1 rounded-xl shadow-lg border border-gray-400 backdrop-blur-sm"
         >
           <div className="drag-handle cursor-move bg-gray-600/50 bg-gray-600 p-1 mb-2 rounded text-center text-[10px] uppercase tracking-widest font-bold">
             :::
@@ -223,15 +267,15 @@ const App = () => {
             Dynamic: <b>{state.dynamic.toString()}</b>
           </p>
           <br />
-          <p className="text-xs">
+          <p className="text-xs w-[200px]">
             Hint: Left-click to toggle dynamic <br />
             rendering; right-click to toggle view.
           </p>
           <br />
 
-          <div className="flex flex-row justify-around gap-1 w-full">
+          <div className="flex flex-row justify-around w-full">
             <button
-              className="bg-gray-700 hover:bg-gray-800 rounded text-sm"
+              className="bg-gray-700 hover:bg-gray-800 rounded text-sm px-3 py-1"
               onClick={() => {
                 setState(defaultState);
                 updateURLState(null);
@@ -240,18 +284,26 @@ const App = () => {
               Reset
             </button>
             <button
-              className="bg-blue-600 hover:bg-blue-700 rounded text-sm square"
+              className="p-1.5 bg-gray-700 hover:bg-gray-800 rounded"
               onClick={() => {
                 updateURLState(state);
               }}
             >
-              <Share2 />
+              <Share2 size={24} />
             </button>
             <button
-              className="bg-green-600 hover:bg-green-700 rounded text-sm"
+              className="p-1.5 bg-gray-700 hover:bg-gray-800 rounded"
               onClick={exportPng}
             >
-              <Download />
+              <Download size={24} />
+            </button>
+            <button
+              className="p-1.5 bg-gray-700 hover:bg-gray-800 rounded"
+              onClick={() => {
+                setInfoMenu(true);
+              }}
+            >
+              <Info size={24} />
             </button>
           </div>
         </div>

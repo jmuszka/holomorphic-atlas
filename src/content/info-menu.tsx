@@ -1,0 +1,55 @@
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import Controls from "./controls";
+import Explanation from "./explanation";
+
+const InfoMenu = ({ setInfoMenu }: { setInfoMenu: (val: boolean) => void }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const menus = [Controls, Explanation];
+  const CurrentMenu = menus[currentIndex];
+
+  const next = () => setCurrentIndex((prev) => (prev + 1) % menus.length);
+  const prev = () =>
+    setCurrentIndex((prev) => (prev - 1 + menus.length) % menus.length);
+
+  return (
+    <>
+      <div className="bg-gray-900/70 w-full h-full fixed z-20 flex flex-col items-center justify-center">
+        <div className="bg-gray-600/80 px-8 py-6 rounded-xl shadow-lg border border-gray-400 max-w-2xl w-full mx-4 backdrop-blur-sm space-y-6 text-lg">
+          <div className="flex flex-row justify-end">
+            <button
+              className="p-1.5 bg-gray-600/50 hover:bg-gray-600 rounded-lg transition-colors"
+              onClick={() => setInfoMenu(false)}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="min-h-[300px]">
+            <CurrentMenu />
+          </div>
+
+          <div className="flex flex-row justify-between items-center pt-4 border-t border-gray-400/30">
+            <button
+              className="p-2 hover:bg-gray-600/50 rounded-full transition-colors"
+              onClick={prev}
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <span className="text-xs text-gray-400 font-mono">
+              {currentIndex + 1} / {menus.length}
+            </span>
+            <button
+              className="p-2 hover:bg-gray-600/50 rounded-full transition-colors"
+              onClick={next}
+            >
+              <ChevronRight size={24} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default InfoMenu;
