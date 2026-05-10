@@ -35,11 +35,21 @@ export const initGL = (canvas: HTMLCanvasElement): GLContext | null => {
   }
 
   const vertices = [
-    0.0, 0.0, 0.0, // origin
-    -1.0, 1.0, 0.0, // top left
-    1.0, 1.0, 0.0, // top right
-    -1.0, -1.0, 0.0, // bottom left
-    1.0, -1.0, 0.0, // botton right
+    0.0,
+    0.0,
+    0.0, // origin
+    -1.0,
+    1.0,
+    0.0, // top left
+    1.0,
+    1.0,
+    0.0, // top right
+    -1.0,
+    -1.0,
+    0.0, // bottom left
+    1.0,
+    -1.0,
+    0.0, // botton right
   ];
 
   const indices = [1, 2, 3, 2, 3, 4];

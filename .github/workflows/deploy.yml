@@ -18,7 +18,7 @@ jobs:
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
-        with: 
+        with:
           bun-version: latest
 
       - name: Install dependencies
@@ -29,13 +29,13 @@ jobs:
 
       - name: Check formatting
         run: bun run format:check
-    
-  deploy: 
+
+  deploy:
     needs: verify
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps: deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -53,7 +53,7 @@ jobs:
         uses: actions/configure-pages@v4
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3 
+        uses: actions/upload-pages-artifact@v3
         with:
           path: "./dist"
 

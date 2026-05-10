@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useLayoutEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import Draggable from "react-draggable";
 import {
   type MapState,
@@ -8,7 +8,7 @@ import {
 } from "./stores/map-state";
 import { render, initGL, type GLContext } from "./shaders/render";
 import { Position } from "./utils/position";
-import { Download, Share2 } from 'lucide-react';
+import { Download, Share2 } from "lucide-react";
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -24,11 +24,6 @@ const App = () => {
     y: window.innerHeight / 2,
   });
   const hasMovedRef = useRef(false);
-
-  // Init
-  useLayoutEffect(() => {
-    setState(loadURLState());
-  }, []);
 
   // OpenGL rendering for each canvas
   useEffect(() => {
