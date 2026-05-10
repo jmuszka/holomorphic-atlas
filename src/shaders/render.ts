@@ -17,6 +17,7 @@ export interface GLContext {
     zoom: WebGLUniformLocation;
     isMandelbrot: WebGLUniformLocation;
     isMainView: WebGLUniformLocation;
+    iterations: WebGLUniformLocation;
   };
   buffers: {
     vertex: WebGLBuffer;
@@ -80,6 +81,7 @@ export const initGL = (canvas: HTMLCanvasElement): GLContext | null => {
     zoom: gl.getUniformLocation(shaderProgram, "u_zoom")!,
     isMandelbrot: gl.getUniformLocation(shaderProgram, "u_is_mandelbrot")!,
     isMainView: gl.getUniformLocation(shaderProgram, "u_is_main_view")!,
+    iterations: gl.getUniformLocation(shaderProgram, "u_iterations")!,
   };
 
   return {
@@ -133,6 +135,8 @@ export const render = (
   );
 
   gl.uniform1i(uniformLocations.isMainView, isMainView ? 1 : 0);
+
+  gl.uniform1i(uniformLocations.iterations, state.iterations);
 
   gl.clearColor(0.5, 0.5, 1.0, 0.9);
   gl.clear(gl.COLOR_BUFFER_BIT);

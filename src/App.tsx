@@ -205,6 +205,22 @@ const App = () => {
               {Math.abs(state.position.toArgand().im).toFixed(3)}i
             </b>
           </p>
+          <div className="flex flex-col my-1">
+            <p>
+              Max Iterations: <b>{state.iterations}</b>
+            </p>
+            <input
+              type="range"
+              min="100"
+              max="20000"
+              step="100"
+              value={state.iterations}
+              onChange={(e) =>
+                setState({ ...state, iterations: parseInt(e.target.value) })
+              }
+              className="w-full h-1.5 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-500"
+            />
+          </div>
           <p>
             Zoom: <b>{state.zoom.toFixed(1)}</b>
           </p>

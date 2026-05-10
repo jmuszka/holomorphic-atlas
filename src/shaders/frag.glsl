@@ -5,6 +5,7 @@ uniform vec2 u_offset;
 uniform float u_zoom;
 uniform int u_is_mandelbrot;
 uniform int u_is_main_view;
+uniform int u_iterations;
 
 void main(void) {
   // Window-relative pixel to Argand-coords
@@ -46,7 +47,7 @@ void main(void) {
   float iteration = 0.0;
 
   // Emulating z_{n+1} = z_{n}^2 + c where c := x + yi
-  for (int i = 0; i < 10000; i++) {
+  for (int i = 0; i < 0xFFFF; i++) {
     // If diverges before iteration limit, exit loop
     if (x*x + y*y > 4.0) break;
 
@@ -56,13 +57,16 @@ void main(void) {
     x = xtemp;
 
     iteration++;
+
+    // Due to WebGL restriction, cannot include variable in loop condition. Break out of loop if counter surpoasses uniform value
+    if (i >= u_iterations) break;
   }
 
-  // Color black if in mandelbrot set (did not diverge after 10,000 iterations)
+  // Color black if in mandelbrot set (did not diverge after max iterations)
   // Color blue if diverged quickly
   // Color yellow if diverged slowly
   vec4 color;
-  if (iteration >= 10000.0) color = vec4(0.0, 0.0, 0.0, 1.0);
+  if (iteration >= float(u_iterations)) color = vec4(0.0, 0.0, 0.0, 1.0);
   else if (iteration >= 50.0) color = vec4(1.0, 1.0, 0.0, 1.0);
   else color = vec4(0.0, 0.0, 1.0, 1.0);
 
