@@ -6,10 +6,13 @@ import {
   loadURLState,
   updateURLState,
 } from "./stores/map-state";
+import Toast from "./components/toast";
+import { type IToast, ToastTip, ToastCopied } from "./utils/toast.tsx";
 import { render, initGL, type GLContext } from "./shaders/render";
 import { Position } from "./utils/position";
-import { Download, Share2, Info, Bell, X } from "lucide-react";
-import InfoMenu from "./content/info-menu";
+import { copy } from "./utils/clipboard";
+import { Download, Share2, Info } from "lucide-react";
+import InfoMenu from "./components/info-menu";
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -27,20 +30,28 @@ const App = () => {
   const hasMovedRef = useRef(false);
 
   const [infoMenu, setInfoMenu] = useState<boolean>(false);
-  const [showToast, setShowToast] = useState<boolean>(false);
+  const [toast, setToast] = useState<IToast | undefined>();
+
+  const updateToast = (newToast: IToast, delay: number, duration: number) => {
+    // Delay for 2 seconds before showing
+    const showTimer = setTimeout(() => setToast(newToast), delay);
+    // Auto-hide toast after 10 seconds (2s delay + 8s visible)
+    const hideTimer = setTimeout(
+      () =>
+        setToast((prev) => (prev ? { ...prev, display: false } : undefined)),
+      duration,
+    );
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+    };
+  };
 
   useEffect(() => {
     const hasVisited = localStorage.getItem("hasVisited");
     if (!hasVisited) {
       localStorage.setItem("hasVisited", "true");
-      // Delay for 2 seconds before showing
-      const showTimer = setTimeout(() => setShowToast(!infoMenu), 2000);
-      // Auto-hide toast after 10 seconds (2s delay + 8s visible)
-      const hideTimer = setTimeout(() => setShowToast(false), 10000);
-      return () => {
-        clearTimeout(showTimer);
-        clearTimeout(hideTimer);
-      };
+      updateToast(ToastTip, 2000, 10000);
     }
   }, []);
 
@@ -97,31 +108,10 @@ const App = () => {
 
   return (
     <>
-      {showToast && (
-        <div className="fixed top-6 right-6 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="bg-gray-600/80 backdrop-blur-sm text-white px-6 py-4 rounded-xl shadow-lg border border-gray-400 flex items-start gap-4 max-w-sm">
-            <div className="bg-gray-600/50 p-2 rounded-lg mt-1">
-              <Bell size={20} />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-lg">New explorer?</h3>
-              <p className="text-sm text-gray-100 leading-snug mt-1">
-                Click the <Info size={14} className="inline mb-0.5" /> icon in
-                the control panel to see controls and learn the math!
-              </p>
-            </div>
-            <button
-              onClick={() => setShowToast(false)}
-              className="hover:bg-gray-600/50 p-1 rounded-lg transition-colors"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-      )}
-
+      {toast?.display && <Toast toast={toast} setToast={setToast} />}
       {infoMenu && <InfoMenu setInfoMenu={setInfoMenu} />}
 
+      {/* Main canvas */}
       <canvas
         ref={canvasRef}
         width={state.fidelity * window.innerWidth}
@@ -211,6 +201,7 @@ const App = () => {
         }}
       />
 
+      {/* Minimap canvas */}
       <div className="fixed bottom-0 right-0 outline-solid m-3">
         <p className="absolute -top-6 w-full text-center">
           View: <b>{state.view.mini}</b>
@@ -222,6 +213,7 @@ const App = () => {
         />
       </div>
 
+      {/* Control panel*/}
       <Draggable nodeRef={nodeRef} handle=".drag-handle">
         <div
           ref={nodeRef}
@@ -279,6 +271,9 @@ const App = () => {
               onClick={() => {
                 setState(defaultState);
                 updateURLState(null);
+                setToast((prev) =>
+                  prev ? { ...prev, display: false } : undefined,
+                ); // clear toast
               }}
             >
               Reset
@@ -287,6 +282,8 @@ const App = () => {
               className="p-1.5 bg-gray-700 hover:bg-gray-800 rounded"
               onClick={() => {
                 updateURLState(state);
+                copy(window.location.href);
+                updateToast(ToastCopied, 200, 10000);
               }}
             >
               <Share2 size={24} />
