@@ -34,7 +34,7 @@ const App = () => {
     if (!hasVisited) {
       localStorage.setItem("hasVisited", "true");
       // Delay for 2 seconds before showing
-      const showTimer = setTimeout(() => setShowToast(true), 2000);
+      const showTimer = setTimeout(() => setShowToast(!infoMenu), 2000);
       // Auto-hide toast after 10 seconds (2s delay + 8s visible)
       const hideTimer = setTimeout(() => setShowToast(false), 10000);
       return () => {
