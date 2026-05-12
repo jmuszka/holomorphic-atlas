@@ -1,3 +1,4 @@
+#version 300 es
 precision highp float;
 uniform vec2 u_resolution;
 uniform vec2 u_input;
@@ -6,6 +7,7 @@ uniform float u_zoom;
 uniform int u_is_mandelbrot;
 uniform int u_is_main_view;
 uniform int u_iterations;
+out vec4 outputColor;
 
 void main(void) {
   // Window-relative pixel to Argand-coords
@@ -70,5 +72,5 @@ void main(void) {
   else if (iteration >= 50.0) color = vec4(1.0, 1.0, 0.0, 1.0);
   else color = vec4(0.0, 0.0, 1.0, 1.0);
 
-  gl_FragColor = color;
+  outputColor = color;
 }

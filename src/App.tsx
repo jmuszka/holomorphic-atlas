@@ -110,9 +110,11 @@ const App = () => {
     <>
       {toast?.display && <Toast toast={toast} setToast={setToast} />}
       {infoMenu && <InfoMenu setInfoMenu={setInfoMenu} />}
+      <div id="#stats-container" className="fixed top right"></div>
 
       {/* Main canvas */}
       <canvas
+        id="main-canvas"
         ref={canvasRef}
         width={state.fidelity * window.innerWidth}
         height={state.fidelity * window.innerHeight}

@@ -4,6 +4,8 @@ import { type MapState } from "../stores/map-state";
 import vertexShaderSource from "./vertex.glsl?url";
 import fragShaderSource from "./frag.glsl?url";
 
+import Stats from "stats-gl";
+
 const vsSource = await fetch(vertexShaderSource).then((res) => res.text());
 const fsSource = await fetch(fragShaderSource).then((res) => res.text());
 
@@ -26,8 +28,18 @@ export interface GLContext {
   indexCount: number;
 }
 
+// Performance monitoring
+const stats = new Stats({ trackGPU: true });
+const canvas = document.querySelector("#main-canvas");
+stats.dom.id = "stats";
+stats.dom.style.left = null;
+stats.dom.style.right = "270px";
+stats.init(canvas);
+
+document.body.appendChild(stats.dom);
+
 export const initGL = (canvas: HTMLCanvasElement): GLContext | null => {
-  const gl = canvas.getContext("webgl");
+  const gl = canvas.getContext("webgl2");
 
   if (!gl) {
     console.error("WebGL not supported");
@@ -111,6 +123,8 @@ export const render = (
   state: MapState,
   isMainView: boolean,
 ) => {
+  stats.begin(); // begin performance monitoring
+
   const { gl, program, uniformLocations, buffers, indexCount } = glContext;
   const canvas = gl.canvas as HTMLCanvasElement;
 
@@ -152,4 +166,8 @@ export const render = (
   gl.clear(gl.COLOR_BUFFER_BIT);
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.drawElements(gl.TRIANGLES, indexCount, gl.UNSIGNED_SHORT, 0);
+
+  // Publish performance metrics
+  stats.end();
+  stats.update();
 };
