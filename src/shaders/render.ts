@@ -104,7 +104,7 @@ export const initGL = (canvas: HTMLCanvasElement): GLContext | null => {
     zoom: gl.getUniformLocation(shaderProgram, "u_zoom")!,
     isMandelbrot: gl.getUniformLocation(shaderProgram, "u_is_mandelbrot")!,
     isMainView: gl.getUniformLocation(shaderProgram, "u_is_main_view")!,
-    iterations: gl.getUniformLocation(shaderProgram, "u_iterations")!,
+    iterations: gl.getUniformLocation(shaderProgram, "u_max_iterations")!,
   };
 
   return {
