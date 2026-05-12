@@ -83,16 +83,6 @@ const App = () => {
     });
   };
 
-  /*
-  const updateZoom = async (newZoom: number) => {
-    // TODO: constraints
-    setState({
-      ...state,
-      zoom: newZoom,
-    });
-  };
-  */
-
   const exportPng = () => {
     const canvas = canvasRef.current;
     if (!canvas || !mainGLRef.current) return;
@@ -198,7 +188,7 @@ const App = () => {
 
           setState({
             ...state,
-            zoom: state.zoom + zoomDelta * rate,
+            zoom: state.zoom - zoomDelta * rate,
           });
         }}
       />
