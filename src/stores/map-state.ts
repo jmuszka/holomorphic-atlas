@@ -6,7 +6,6 @@ export type MapState = {
     main: Set;
     mini: Set;
   };
-  fidelity: number;
   position: Position;
   offset: Position;
   zoom: number;
@@ -19,7 +18,6 @@ export const defaultState: MapState = {
     main: Set.MANDELBROT,
     mini: Set.JULIA,
   },
-  fidelity: 1.0,
   position: new Position({
     x: window.innerWidth / 2.0,
     y: window.innerHeight / 2.0,

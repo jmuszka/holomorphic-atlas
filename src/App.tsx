@@ -116,8 +116,8 @@ const App = () => {
       <canvas
         id="main-canvas"
         ref={canvasRef}
-        width={state.fidelity * window.innerWidth}
-        height={state.fidelity * window.innerHeight}
+        width={window.innerWidth}
+        height={window.innerHeight}
         className="w-screen h-screen"
         onMouseDown={() => {
           hasMovedRef.current = false;
@@ -226,9 +226,6 @@ const App = () => {
           </div>
           <p>
             View: <b>{state.view.main}</b>
-          </p>
-          <p>
-            Fidelity: <b>{state.fidelity.toFixed(1)}</b>
           </p>
           <p>
             Point:{" "}
