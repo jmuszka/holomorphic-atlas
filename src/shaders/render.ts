@@ -32,8 +32,9 @@ export interface GLContext {
 const stats = new Stats({ trackGPU: true });
 const canvas = document.querySelector("#main-canvas");
 stats.dom.id = "stats";
-stats.dom.style.left = null;
+stats.dom.style.left = "";
 stats.dom.style.right = "270px";
+stats.dom.style.zIndex = "5";
 stats.init(canvas);
 
 document.body.appendChild(stats.dom);
