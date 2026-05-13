@@ -9,6 +9,7 @@ uniform float u_zoom;
 uniform int u_is_mandelbrot;
 uniform int u_is_main_view;
 uniform int u_max_iterations;
+uniform int u_experimental;
 out vec4 outputColor;
 
 // The idea beind this algorithm is to count how many iterations of the recursive relation it takes to make the point on the screen diverge. If it doesn't diverge before the maximum iteration limit, we assume it is in the Mandelbrot set. Points are colored according to their divergence speed
@@ -63,8 +64,17 @@ void main(void)
     y0 = coords.y;
 
     // z_0
-    x = u_input.x; 
-    y = u_input.y; 
+    if (u_experimental == 1)
+    {
+      x = u_input.x; 
+      y = u_input.y; 
+    }
+    else
+    {
+      x = 0.0;
+      y = 0.0;
+    }
+
   }
   else
   {

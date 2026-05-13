@@ -247,6 +247,25 @@ const App = () => {
           <p>
             Dynamic: <b>{state.dynamic.toString()}</b>
           </p>
+          <div className="flex items-center justify-start gap-1">
+            <button
+              onClick={() =>
+                setState({ ...state, experimental: !state.experimental })
+              }
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                state.experimental ? "!bg-blue-500" : "!bg-gray-700"
+              }`}
+            >
+              <span
+                className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                  state.experimental ? "translate-x-5" : "translate-x-1"
+                }`}
+              />
+            </button>
+            <p>
+              <span className="relative top-[2.5px]">Experimental?</span>
+            </p>
+          </div>
           <br />
           <p className="text-xs w-[200px]">
             Hint: Left-click to toggle dynamic <br />

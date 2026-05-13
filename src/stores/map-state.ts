@@ -11,6 +11,7 @@ export type MapState = {
   zoom: number;
   dynamic: boolean;
   iterations: number;
+  experimental: boolean;
 };
 
 export const defaultState: MapState = {
@@ -29,6 +30,7 @@ export const defaultState: MapState = {
   zoom: 1.0,
   dynamic: false,
   iterations: 10000,
+  experimental: true,
 };
 
 export const loadURLState = (): MapState => {
