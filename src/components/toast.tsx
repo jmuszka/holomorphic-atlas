@@ -1,15 +1,12 @@
-import React from "react";
 import { X } from "lucide-react";
-import { type IToast } from "../utils/toast.tsx";
 import { isMobile } from "../utils/is-mobile";
+import { useApp } from "../stores/app-context";
 
-const Toast = ({
-  toast,
-  setToast,
-}: {
-  toast: IToast;
-  setToast: React.Dispatch<React.SetStateAction<IToast | undefined>>;
-}) => {
+const Toast = () => {
+  const { toast, setToast } = useApp();
+
+  if (!toast?.display) return null;
+
   return (
     <div className="fixed z-30">
       <div
@@ -18,7 +15,7 @@ const Toast = ({
         <div className="bg-gray-600/80 backdrop-blur-sm text-white px-6 py-4 rounded-xl shadow-lg border border-gray-400 flex items-start gap-4 max-w-sm">
           <div className="bg-gray-600/50 p-2 rounded-lg mt-1">{toast.icon}</div>
           <div className="flex-1">
-            <h3 className="font-bold text-lg">{toast.title}</h3>
+            <h3 className="font-bold text-lg text-white">{toast.title}</h3>
             <p className="text-sm text-gray-100 leading-snug mt-1">
               {toast.body}
             </p>
@@ -27,7 +24,7 @@ const Toast = ({
             onClick={() => setToast({ ...toast, display: false })}
             className="hover:bg-gray-600/50 p-1 rounded-lg transition-colors"
           >
-            <X size={18} />
+            <X size={18} color="white" />
           </button>
         </div>
       </div>
