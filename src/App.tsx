@@ -11,9 +11,20 @@ import { type IToast, ToastTip, ToastCopied } from "./utils/toast.tsx";
 import { render, initGL, type GLContext } from "./shaders/render";
 import { Position } from "./utils/position";
 import { copy } from "./utils/clipboard";
-import { Download, Share2, Info } from "lucide-react";
+import {
+  Download,
+  Share2,
+  Info,
+  Plus,
+  Minus,
+  ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import InfoMenu from "./components/info-menu";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
+import { isMobile } from "./utils/is-mobile";
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -32,6 +43,8 @@ const App = () => {
 
   const [infoMenu, setInfoMenu] = useState<boolean>(false);
   const [toast, setToast] = useState<IToast | undefined>();
+  const [enableTouchControls, setEnableTouchControls] =
+    useState<boolean>(isMobile);
 
   const updateToast = (newToast: IToast, delay: number, duration: number) => {
     // Delay for 2 seconds before showing
@@ -267,6 +280,23 @@ const App = () => {
               <span className="relative top-[2.5px]">Experimental?</span>
             </p>
           </div>
+          <div className="flex items-center justify-start gap-1">
+            <button
+              onClick={() => setEnableTouchControls(!enableTouchControls)}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                enableTouchControls ? "!bg-blue-500" : "!bg-gray-700"
+              }`}
+            >
+              <span
+                className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                  enableTouchControls ? "translate-x-5" : "translate-x-1"
+                }`}
+              />
+            </button>
+            <p>
+              <span className="relative top-[2.5px]">Touch controls?</span>
+            </p>
+          </div>
           <br />
           <p className="text-xs w-[200px]">
             Hint: Left-click to toggle dynamic <br />
@@ -314,6 +344,97 @@ const App = () => {
           </div>
         </div>
       </Draggable>
+
+      {enableTouchControls && (
+        <div className="fixed bottom-12 left-4 flex flex-col gap-4 z-10">
+          {/* D-Pad */}
+          <div className="grid grid-cols-3 gap-1 bg-gray-600/40 p-2 rounded-xl backdrop-blur-sm border border-gray-400/30">
+            <div />
+            <button
+              className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
+              onClick={() =>
+                updateOffset(
+                  new Position({
+                    x: state.offset.getPosition().x,
+                    y: state.offset.getPosition().y + 50 / state.zoom,
+                  }),
+                )
+              }
+              title="Pan Up"
+            >
+              <ChevronUp size={24} />
+            </button>
+            <div />
+
+            <button
+              className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
+              onClick={() =>
+                updateOffset(
+                  new Position({
+                    x: state.offset.getPosition().x + 50 / state.zoom,
+                    y: state.offset.getPosition().y,
+                  }),
+                )
+              }
+              title="Pan Left"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <div className="flex items-center justify-center text-[10px] text-gray-300 font-bold">
+              PAN
+            </div>
+            <button
+              className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
+              onClick={() =>
+                updateOffset(
+                  new Position({
+                    x: state.offset.getPosition().x - 50 / state.zoom,
+                    y: state.offset.getPosition().y,
+                  }),
+                )
+              }
+              title="Pan Right"
+            >
+              <ChevronRight size={24} />
+            </button>
+
+            <div />
+            <button
+              className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
+              onClick={() =>
+                updateOffset(
+                  new Position({
+                    x: state.offset.getPosition().x,
+                    y: state.offset.getPosition().y - 50 / state.zoom,
+                  }),
+                )
+              }
+              title="Pan Down"
+            >
+              <ChevronDown size={24} />
+            </button>
+            <div />
+          </div>
+
+          {/* Zoom Buttons */}
+          <div className="flex flex-row gap-2 justify-center bg-gray-600/40 p-2 rounded-xl backdrop-blur-sm border border-gray-400/30">
+            <button
+              className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-full shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
+              onClick={() => setState({ ...state, zoom: state.zoom / 1.5 })}
+              title="Zoom Out"
+            >
+              <Minus size={24} />
+            </button>
+            <button
+              className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-full shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
+              onClick={() => setState({ ...state, zoom: state.zoom * 1.5 })}
+              title="Zoom In"
+            >
+              <Plus size={24} />
+            </button>
+          </div>
+        </div>
+      )}
       <MathJaxContext>
         <p className="fixed z-10 left-1 bottom-0">
           Offset:{" "}
