@@ -14,8 +14,9 @@ const InfoMenu = ({ setInfoMenu }: { setInfoMenu: (val: boolean) => void }) => {
 
   return (
     <>
-      <div className="bg-gray-900/70 w-full h-full fixed z-20 flex flex-col items-center justify-center">
-        <div className="bg-gray-600/80 px-8 py-6 rounded-xl shadow-lg border border-gray-400 max-w-2xl w-full mx-4 backdrop-blur-sm space-y-6 text-lg">
+      <div className="fixed z-11 bg-gray-900/70 w-full h-full"></div>
+      <div className="flex flex-col justify-center w-full h-full fixed z-20 flex flex-col items-center justify-center">
+        <div className="bg-gray-600/80 px-8 py-6 rounded-xl shadow-lg border border-gray-400 max-w-2xl w-full backdrop-blur-sm space-y-6 text-lg max-h-[90vh] overflow-auto scrollbar-thin [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-400 [&::-webkit-scrollbar-thumb]:rounded-full scrollbar-gutter-stable">
           <div className="flex flex-row justify-end">
             <button
               className="p-1.5 bg-gray-600/50 hover:bg-gray-600 rounded-lg transition-colors"

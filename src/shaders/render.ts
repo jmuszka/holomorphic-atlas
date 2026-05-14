@@ -5,6 +5,7 @@ import vertexShaderSource from "./vertex.glsl?url";
 import fragShaderSource from "./frag.glsl?url";
 
 import Stats from "stats-gl";
+import { isMobile } from "../utils/is-mobile";
 
 const vsSource = await fetch(vertexShaderSource).then((res) => res.text());
 const fsSource = await fetch(fragShaderSource).then((res) => res.text());
@@ -30,7 +31,8 @@ export interface GLContext {
 }
 
 // Performance monitoring
-const stats = new Stats({ trackGPU: true });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let stats: any = new Stats({ trackGPU: true });
 const canvas = document.querySelector("#main-canvas");
 stats.dom.id = "stats";
 stats.dom.style.left = "";
@@ -38,7 +40,8 @@ stats.dom.style.right = "270px";
 stats.dom.style.zIndex = "5";
 stats.init(canvas);
 
-document.body.appendChild(stats.dom);
+if (!isMobile) document.body.appendChild(stats.dom);
+else stats = null;
 
 export const initGL = (canvas: HTMLCanvasElement): GLContext | null => {
   const gl = canvas.getContext("webgl2");
@@ -126,7 +129,7 @@ export const render = (
   state: MapState,
   isMainView: boolean,
 ) => {
-  stats.begin(); // begin performance monitoring
+  stats?.begin(); // begin performance monitoring
 
   const { gl, program, uniformLocations, buffers, indexCount } = glContext;
   const canvas = gl.canvas as HTMLCanvasElement;
@@ -173,6 +176,6 @@ export const render = (
   gl.drawElements(gl.TRIANGLES, indexCount, gl.UNSIGNED_SHORT, 0);
 
   // Publish performance metrics
-  stats.end();
-  stats.update();
+  stats?.end();
+  stats?.update();
 };

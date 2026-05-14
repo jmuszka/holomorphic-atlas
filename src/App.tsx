@@ -13,6 +13,7 @@ import { Position } from "./utils/position";
 import { copy } from "./utils/clipboard";
 import { Download, Share2, Info } from "lucide-react";
 import InfoMenu from "./components/info-menu";
+import { MathJax, MathJaxContext } from "better-react-mathjax";
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -217,14 +218,14 @@ const App = () => {
           <p>
             View: <b>{state.view.main}</b>
           </p>
-          <p>
-            Point:{" "}
-            <b>
-              {state.position.toArgand().re.toFixed(3)}{" "}
-              {state.position.toArgand().im >= 0 ? "+" : "-"}{" "}
-              {Math.abs(state.position.toArgand().im).toFixed(3)}i
-            </b>
-          </p>
+          <MathJaxContext>
+            <p>
+              Point:{" "}
+              <MathJax
+                inline
+              >{`\\(${state.position.toArgand().re.toFixed(3)} ${state.position.toArgand().im >= 0 ? "+" : "-"} ${Math.abs(state.position.toArgand().im).toFixed(3)}i\\)`}</MathJax>
+            </p>
+          </MathJaxContext>
           <div className="flex flex-col my-1">
             <p>
               Max Iterations: <b>{state.iterations}</b>
@@ -313,10 +314,14 @@ const App = () => {
           </div>
         </div>
       </Draggable>
-      <p className="fixed z-10 left-1 bottom-0">
-        Offset: ({state.offset.toArgand().re.toFixed(3)},{" "}
-        {state.offset.toArgand().im.toFixed(3)})
-      </p>
+      <MathJaxContext>
+        <p className="fixed z-10 left-1 bottom-0">
+          Offset:{" "}
+          <MathJax
+            inline
+          >{`\\(${state.offset.toArgand().re.toFixed(3)} ${state.offset.toArgand().im >= 0 ? "+" : "-"} ${Math.abs(state.offset.toArgand().im).toFixed(3)}i\\)`}</MathJax>
+        </p>
+      </MathJaxContext>
     </>
   );
 };
