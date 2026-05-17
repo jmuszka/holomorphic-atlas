@@ -1,4 +1,3 @@
-// TODO: thorough comments all throughout codebase
 import { useRef, useEffect, useState } from "react";
 import Toast from "./components/toast";
 import { render, initGL, type GLContext } from "./shaders/render";
@@ -18,7 +17,7 @@ const App = () => {
   const mainGLRef = useRef<GLContext | null>(null);
   const miniGLRef = useRef<GLContext | null>(null);
 
-  const { state, setState, enableTouchControls } = useApp();
+  const { state, setState, enableTouchControls, infoMenu } = useApp();
 
   const [mousePos, setMousePos] = useState<{ x: number; y: number }>({
     x: window.innerWidth / 2,
@@ -39,24 +38,6 @@ const App = () => {
     if (miniGLRef.current) render(miniGLRef.current, state, false);
   }, [state]);
 
-  // TODO: remove
-  const updatePosition = async (pos: Position) => {
-    setState({
-      ...state,
-      position: pos,
-    });
-  };
-
-  // TODO: remove
-  const updateOffset = async (adjustment: Position) => {
-    // TODO: constraints
-    setState({
-      ...state,
-      offset: adjustment,
-    });
-  };
-
-  // TODO: move to utils
   const exportPng = () => {
     const canvas = canvasRef.current;
     if (!canvas || !mainGLRef.current) return;
@@ -89,14 +70,22 @@ const App = () => {
           hasMovedRef.current = false;
         }}
         onClick={(e) => {
-          // TODO: pointer position needs to offsetted
           if (hasMovedRef.current) return;
 
           // Toggle dynamic mode and update position
           setState({
             ...state,
             dynamic: !state.dynamic,
-            position: new Position({ x: e.clientX, y: e.clientY }),
+            position: new Position({
+              x:
+                e.clientX -
+                state.offset.getPosition().x +
+                window.innerWidth / 2,
+              y:
+                e.clientY -
+                state.offset.getPosition().y +
+                window.innerHeight / 2,
+            }),
           });
         }}
         onContextMenu={(e) => {
@@ -116,21 +105,31 @@ const App = () => {
           if (e.buttons !== 0) {
             hasMovedRef.current = true;
 
-            updateOffset(
-              new Position({
+            setState({
+              ...state,
+              offset: new Position({
                 x:
                   state.offset.getPosition().x +
-                  (e.clientX - mousePos.x) / state.zoom,
+                  ((window.innerHeight / window.innerWidth) *
+                    (e.clientX - mousePos.x)) /
+                    state.zoom,
                 y:
                   state.offset.getPosition().y +
                   (e.clientY - mousePos.y) / state.zoom,
               }),
-            );
+            });
           }
           // Not dragging
           else {
             if (state.dynamic)
-              updatePosition(new Position({ x: e.clientX, y: e.clientY }));
+              setState({
+                ...state,
+                //position: new Position({ x: e.clientX, y: e.clientY })
+                position: new Position({
+                  x: e.clientX,
+                  y: e.clientY,
+                }),
+              });
           }
 
           // Update mouse tracker
@@ -152,7 +151,9 @@ const App = () => {
 
       {/* Minimap canvas */}
       <div className="fixed bottom-0 right-0 outline-solid m-3">
-        <p className="absolute -top-6 w-full text-center">
+        <p
+          className={`absolute -top-6 w-full text-center ${infoMenu ? "select-none" : ""}`}
+        >
           View: <b>{state.view.mini}</b>
         </p>
         <canvas
@@ -175,7 +176,9 @@ const App = () => {
 
       {/* Offset label */}
       <MathJaxContext>
-        <p className="fixed z-10 left-1 bottom-0">
+        <p
+          className={`fixed z-5 left-1 bottom-0 ${infoMenu ? "select-none" : ""}`}
+        >
           Offset:{" "}
           <MathJax
             inline

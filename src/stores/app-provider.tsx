@@ -34,6 +34,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
+  // Clear text selections when switching menus
+  useEffect(() => {
+    const sel = window.getSelection
+      ? window.getSelection()
+      : document.getSelection();
+    if (sel) {
+      if (sel.removeAllRanges) {
+        sel.removeAllRanges();
+      } else if (sel.empty) {
+        sel.empty();
+      }
+    }
+  }, [infoMenu]);
+
   const value: AppContextType = {
     state,
     setState,

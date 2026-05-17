@@ -33,20 +33,72 @@ export const defaultState: MapState = {
   experimental: true,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isValidState = (state: any): boolean => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isObject = (val: any) => val !== null && typeof val === "object";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isNumber = (val: any) => typeof val === "number";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isBoolean = (val: any) => typeof val === "boolean";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isSet = (val: any) => Object.values(Set).includes(val);
+
+    return (
+      isObject(state) &&
+      isObject(state.view) &&
+      isSet(state.view.main) &&
+      isSet(state.view.mini) &&
+      isObject(state.position) &&
+      isNumber(state.position.x) &&
+      isNumber(state.position.y) &&
+      isObject(state.offset) &&
+      isNumber(state.offset.x) &&
+      isNumber(state.offset.y) &&
+      isNumber(state.zoom) &&
+      state.zoom > 0 &&
+      isBoolean(state.dynamic) &&
+      isNumber(state.iterations) &&
+      state.iterations > 0 &&
+      isBoolean(state.experimental)
+    );
+  } catch {
+    return false;
+  }
+};
+
 export const loadURLState = (): MapState => {
   const encodedState = new URL(window.location.href).searchParams.get("state");
+  const url = new URL(window.location.href);
 
   if (!encodedState) {
     return defaultState;
   }
 
-  const decodedState = JSON.parse(atob(encodedState));
-  decodedState.position = new Position(decodedState.position); // necessary because typescript objects don't get encoded/decoded properly
-  decodedState.offset = new Position(decodedState.offset); // necessary because typescript objects don't get encoded/decoded properly
+  try {
+    const decodedState = JSON.parse(atob(encodedState));
 
-  // TODO: validation
+    if (!isValidState(decodedState)) {
+      console.warn("Invalid state in URL, falling back to default");
+      url.searchParams.delete("state");
+      window.history.replaceState(null, "", url.toString());
+      return defaultState;
+    }
 
-  return decodedState;
+    decodedState.position = new Position(decodedState.position);
+    decodedState.offset = new Position(decodedState.offset);
+
+    return decodedState as MapState;
+  } catch (e) {
+    console.error(
+      "Failed to decode state from URL, falling back to default",
+      e,
+    );
+    url.searchParams.delete("state");
+    window.history.replaceState(null, "", url.toString());
+    return defaultState;
+  }
 };
 
 export const updateURLState = (state: MapState | null) => {

@@ -29,7 +29,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
     <Draggable nodeRef={nodeRef} handle=".drag-handle">
       <div
         ref={nodeRef}
-        className={`fixed top-0 left-0 bg-gray-600/80 px-5 py-3 m-1 rounded-xl shadow-lg border border-gray-400 backdrop-blur-sm z-50 ${infoMenu ? "select-none pointer-events-none" : ""}`}
+        className={`fixed top-0 left-0 bg-gray-600/80 px-5 py-3 m-1 rounded-xl shadow-lg border border-gray-400 backdrop-blur-sm z-10 ${infoMenu ? "select-none pointer-events-none" : ""}`}
       >
         <div className="drag-handle cursor-move bg-gray-600/50 bg-gray-600 p-1 mb-2 rounded text-center text-[10px] uppercase tracking-widest font-bold text-white">
           :::
