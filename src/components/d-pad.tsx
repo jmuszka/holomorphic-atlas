@@ -21,6 +21,7 @@ const DPad = () => {
     <div className="grid grid-cols-3 gap-1 bg-gray-600/40 p-2 rounded-xl backdrop-blur-sm border border-gray-400/30">
       <div />
       <button
+        role="button"
         className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
         onClick={() =>
           updateOffset(
@@ -37,6 +38,7 @@ const DPad = () => {
       <div />
 
       <button
+        role="button"
         className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
         onClick={() =>
           updateOffset(
@@ -54,6 +56,7 @@ const DPad = () => {
         PAN
       </div>
       <button
+        role="button"
         className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
         onClick={() =>
           updateOffset(
@@ -70,6 +73,7 @@ const DPad = () => {
 
       <div />
       <button
+        role="button"
         className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
         onClick={() =>
           updateOffset(

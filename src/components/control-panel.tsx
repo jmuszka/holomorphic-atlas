@@ -15,6 +15,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
   const {
     state,
     setState,
+    infoMenu,
     setInfoMenu,
     setToast,
     updateToast,
@@ -28,7 +29,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
     <Draggable nodeRef={nodeRef} handle=".drag-handle">
       <div
         ref={nodeRef}
-        className="fixed top-0 left-0 bg-gray-600/80 px-5 py-3 m-1 rounded-xl shadow-lg border border-gray-400 backdrop-blur-sm z-50"
+        className={`fixed top-0 left-0 bg-gray-600/80 px-5 py-3 m-1 rounded-xl shadow-lg border border-gray-400 backdrop-blur-sm z-50 ${infoMenu ? "select-none pointer-events-none" : ""}`}
       >
         <div className="drag-handle cursor-move bg-gray-600/50 bg-gray-600 p-1 mb-2 rounded text-center text-[10px] uppercase tracking-widest font-bold text-white">
           :::
@@ -51,8 +52,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
           <input
             type="range"
             min="100"
-            max="20000"
-            step="100"
+            max="1000"
+            step="1"
             value={state.iterations}
             onChange={(e) =>
               setState({ ...state, iterations: parseInt(e.target.value) })
@@ -68,6 +69,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
         </p>
         <div className="flex items-center justify-start gap-1 text-white">
           <button
+            role="button"
             onClick={() =>
               setState({ ...state, experimental: !state.experimental })
             }
@@ -87,6 +89,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
         </div>
         <div className="flex items-center justify-start gap-1 text-white">
           <button
+            role="button"
             onClick={() => setEnableTouchControls(!enableTouchControls)}
             className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
               enableTouchControls ? "!bg-blue-500" : "!bg-gray-700"
@@ -111,6 +114,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
 
         <div className="flex flex-row justify-around w-full text-white">
           <button
+            role="button"
             className="bg-gray-700 hover:bg-gray-800 rounded text-sm px-3 py-1"
             onClick={() => {
               setState(defaultState);
@@ -123,6 +127,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
             Reset
           </button>
           <button
+            role="button"
             className="p-1.5 bg-gray-700 hover:bg-gray-800 rounded"
             onClick={() => {
               updateURLState(state);
@@ -133,12 +138,14 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
             <Share2 size={24} />
           </button>
           <button
+            role="button"
             className="p-1.5 bg-gray-700 hover:bg-gray-800 rounded"
             onClick={onExportPng}
           >
             <Download size={24} />
           </button>
           <button
+            role="button"
             className="p-1.5 bg-gray-700 hover:bg-gray-800 rounded"
             onClick={() => {
               setInfoMenu(true);

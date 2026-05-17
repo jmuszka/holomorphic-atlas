@@ -29,7 +29,7 @@ export const defaultState: MapState = {
   }),
   zoom: 1.0,
   dynamic: false,
-  iterations: 10000,
+  iterations: 500,
   experimental: true,
 };
 

@@ -36,8 +36,8 @@ vec4 escape_time(float x, float y, float x0, float y0)
   // Color yellow if diverged slowly
   vec4 color;
   if (iteration >= u_max_iterations) color = vec4(0.0, 0.0, 0.0, 1.0);
-  else if (iteration >= 50) color = vec4(1.0, 1.0, 0.0, 1.0);
-  else color = vec4(0.0, 0.0, 1.0, 1.0);
+  else if (iteration >= u_max_iterations/10) color = vec4(1.0, 1.0, 0.5, 1.0);
+  else color = vec4(0.004, 0.024, 0.243, 1.0);
 
   return color;
 }
