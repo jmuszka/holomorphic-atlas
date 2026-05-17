@@ -1,6 +1,6 @@
 enum Set {
-  MANDELBROT = "Mandelbrot",
-  JULIA = "Julia",
+  Mandelbrot,
+  Julia,
 }
 
 export { Set };

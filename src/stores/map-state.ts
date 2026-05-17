@@ -1,4 +1,5 @@
 import { Set } from "../types/set";
+import { ColoringAlgorithm } from "../types/coloring-algorithm";
 import { Position } from "../utils/position";
 
 export type MapState = {
@@ -12,12 +13,13 @@ export type MapState = {
   dynamic: boolean;
   iterations: number;
   experimental: boolean;
+  coloringAlgorithm: ColoringAlgorithm;
 };
 
 export const defaultState: MapState = {
   view: {
-    main: Set.MANDELBROT,
-    mini: Set.JULIA,
+    main: Set.Mandelbrot,
+    mini: Set.Julia,
   },
   position: new Position({
     x: window.innerWidth / 2.0,
@@ -31,6 +33,7 @@ export const defaultState: MapState = {
   dynamic: false,
   iterations: 500,
   experimental: true,
+  coloringAlgorithm: ColoringAlgorithm.Continuous,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,6 +47,9 @@ const isValidState = (state: any): boolean => {
     const isBoolean = (val: any) => typeof val === "boolean";
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const isSet = (val: any) => Object.values(Set).includes(val);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isColoringAlgorithm = (val: any) =>
+      Object.values(ColoringAlgorithm).includes(val);
 
     return (
       isObject(state) &&
@@ -61,7 +67,8 @@ const isValidState = (state: any): boolean => {
       isBoolean(state.dynamic) &&
       isNumber(state.iterations) &&
       state.iterations > 0 &&
-      isBoolean(state.experimental)
+      isBoolean(state.experimental) &&
+      isColoringAlgorithm(state.coloringAlgorithm)
     );
   } catch {
     return false;

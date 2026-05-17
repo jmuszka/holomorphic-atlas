@@ -1,4 +1,3 @@
-import { Set } from "../types/set";
 import { type MapState } from "../stores/map-state";
 
 import vertexShaderSource from "./vertex.glsl?url";
@@ -18,10 +17,11 @@ export interface GLContext {
     input: WebGLUniformLocation;
     offset: WebGLUniformLocation;
     zoom: WebGLUniformLocation;
-    isMandelbrot: WebGLUniformLocation;
+    view: WebGLUniformLocation;
     isMainView: WebGLUniformLocation;
     iterations: WebGLUniformLocation;
     experimental: WebGLUniformLocation;
+    coloringAlgorithm: WebGLUniformLocation;
   };
   buffers: {
     vertex: WebGLBuffer;
@@ -106,10 +106,14 @@ export const initGL = (canvas: HTMLCanvasElement): GLContext | null => {
     input: gl.getUniformLocation(shaderProgram, "u_input")!,
     offset: gl.getUniformLocation(shaderProgram, "u_offset")!,
     zoom: gl.getUniformLocation(shaderProgram, "u_zoom")!,
-    isMandelbrot: gl.getUniformLocation(shaderProgram, "u_is_mandelbrot")!,
+    view: gl.getUniformLocation(shaderProgram, "u_view")!,
     isMainView: gl.getUniformLocation(shaderProgram, "u_is_main_view")!,
     iterations: gl.getUniformLocation(shaderProgram, "u_max_iterations")!,
     experimental: gl.getUniformLocation(shaderProgram, "u_experimental")!,
+    coloringAlgorithm: gl.getUniformLocation(
+      shaderProgram,
+      "u_coloring_algorithm",
+    )!,
   };
 
   return {
@@ -160,8 +164,8 @@ export const render = (
   gl.uniform1f(uniformLocations.zoom, state.zoom);
 
   gl.uniform1i(
-    uniformLocations.isMandelbrot,
-    (isMainView ? state.view.main : state.view.mini) === Set.MANDELBROT ? 1 : 0,
+    uniformLocations.view,
+    isMainView ? state.view.main : state.view.mini,
   );
 
   gl.uniform1i(uniformLocations.isMainView, isMainView ? 1 : 0);
@@ -169,6 +173,8 @@ export const render = (
   gl.uniform1i(uniformLocations.iterations, state.iterations);
 
   gl.uniform1i(uniformLocations.experimental, state.experimental ? 1 : 0);
+
+  gl.uniform1i(uniformLocations.coloringAlgorithm, state.coloringAlgorithm);
 
   gl.clearColor(0.5, 0.5, 1.0, 0.9);
   gl.clear(gl.COLOR_BUFFER_BIT);

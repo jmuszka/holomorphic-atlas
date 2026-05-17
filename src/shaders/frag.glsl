@@ -6,10 +6,10 @@ uniform vec2 u_resolution;
 uniform vec2 u_input;
 uniform vec2 u_offset;
 uniform float u_zoom;
-uniform int u_is_mandelbrot;
-uniform int u_is_main_view;
+uniform int u_view;
 uniform int u_max_iterations;
 uniform int u_experimental;
+uniform int u_coloring_algorithm;
 out vec4 outputColor;
 
 // The idea beind this algorithm is to count how many iterations of the recursive relation it takes to make the point on the screen diverge. If it doesn't diverge before the maximum iteration limit, we assume it is in the Mandelbrot set. Points are colored according to their divergence speed
@@ -34,10 +34,19 @@ vec4 escape_time(float x, float y, float x0, float y0)
   // Color black if in mandelbrot set (did not diverge after max iterations)
   // Color blue if diverged quickly
   // Color yellow if diverged slowly
+
   vec4 color;
-  if (iteration >= u_max_iterations) color = vec4(0.0, 0.0, 0.0, 1.0);
-  else if (iteration >= u_max_iterations/10) color = vec4(1.0, 1.0, 0.5, 1.0);
-  else color = vec4(0.004, 0.024, 0.243, 1.0);
+  switch (u_coloring_algorithm)
+  {
+    case 1: // Continuous
+      if (iteration >= u_max_iterations) color = vec4(0.0, 0.0, 0.0, 1.0);
+      else if (iteration >= u_max_iterations/10) color = vec4(1.0, 1.0, 0.5, 1.0);
+      else color = vec4(0.004, 0.024, 0.243, 1.0);
+      break;
+    default:
+      color = iteration < u_max_iterations ? vec4(0.0, 0.0, 0.0, 1.0) : vec4(1.0);
+      break;
+  }
 
   return color;
 }
@@ -55,39 +64,40 @@ void main(void)
 
   float x, y, x0, y0;
 
-  if (u_is_mandelbrot == 1) 
+  switch (u_view)
   {
-    // Set Mandelbrot parameters
+    case 0:
+      // Set Mandelbrot parameters
+      // c
+      x0 = coords.x; 
+      y0 = coords.y;
 
-    // c
-    x0 = coords.x; 
-    y0 = coords.y;
+      // z_0
+      if (u_experimental == 1)
+      {
+        x = u_input.x; 
+        y = u_input.y; 
+      }
+      else
+      {
+        x = 0.0;
+        y = 0.0;
+      }
+      break;
+  
+    case 1:
+      // Set Julia parameters
+      // z_0
+      x0 = u_input.x; 
+      y0 = u_input.y;
 
-    // z_0
-    if (u_experimental == 1)
-    {
-      x = u_input.x; 
-      y = u_input.y; 
+      // c
+      x = coords.x; 
+      y = coords.y; 
+      break;
+    default:
+      break;
     }
-    else
-    {
-      x = 0.0;
-      y = 0.0;
-    }
-
-  }
-  else
-  {
-    // Set Julia parameters
-
-    // z_0
-    x0 = u_input.x; 
-    y0 = u_input.y;
-
-    // c
-    x = coords.x; 
-    y = coords.y; 
-  }
 
   outputColor = escape_time(x, y, x0, y0);
 }

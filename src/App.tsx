@@ -9,6 +9,7 @@ import { useApp } from "./stores/app-context";
 import ControlPanel from "./components/control-panel";
 import DPad from "./components/d-pad";
 import ZoomControls from "./components/zoom-controls";
+import { Set } from "./types/set";
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -46,7 +47,7 @@ const App = () => {
     render(mainGLRef.current, state, true);
 
     const link = document.createElement("a");
-    link.download = `${state.view.main} Set (${new Date().toISOString()}).png`;
+    link.download = `${Set[state.view.main]} Set (${new Date().toISOString()}).png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
   };
@@ -154,7 +155,7 @@ const App = () => {
         <p
           className={`absolute -top-6 w-full text-center ${infoMenu ? "select-none" : ""}`}
         >
-          View: <b>{state.view.mini}</b>
+          View: <b>{Set[state.view.mini]}</b>
         </p>
         <canvas
           ref={miniCanvasRef}

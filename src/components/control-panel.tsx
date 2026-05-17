@@ -6,6 +6,8 @@ import { useApp } from "../stores/app-context";
 import { defaultState, updateURLState } from "../stores/map-state";
 import { copy } from "../utils/clipboard";
 import { ToastCopied } from "../utils/toast";
+import { Set } from "../types/set";
+import { ColoringAlgorithm } from "../types/coloring-algorithm";
 
 interface ControlPanelProps {
   onExportPng: () => void;
@@ -35,7 +37,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
           :::
         </div>
         <p className="text-white">
-          View: <b>{state.view.main}</b>
+          View: <b>{Set[state.view.main]}</b>
         </p>
         <MathJaxContext>
           <p className="text-white">
@@ -60,6 +62,32 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
             }
             className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
           />
+        </div>
+        <div className="flex flex-col my-1 text-white">
+          <p>Coloring Algorithm:</p>
+          <select
+            value={state.coloringAlgorithm}
+            onChange={(e) =>
+              setState({
+                ...state,
+                coloringAlgorithm: parseInt(e.target.value),
+              })
+            }
+            className="w-full bg-gray-700 text-white rounded-lg p-1 mt-1 border border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {Object.keys(ColoringAlgorithm)
+              .filter((key) => isNaN(Number(key)))
+              .map((key) => (
+                <option
+                  key={key}
+                  value={
+                    ColoringAlgorithm[key as keyof typeof ColoringAlgorithm]
+                  }
+                >
+                  {key}
+                </option>
+              ))}
+          </select>
         </div>
         <p className="text-white">
           Zoom: <b>{state.zoom.toFixed(1)}</b>
