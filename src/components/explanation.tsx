@@ -34,7 +34,7 @@ const Explanation = () => {
           <MathJax
             inline
           >{`\\(f:\\mathbb{C}\\rightarrow\\mathbb{C}\\)`}</MathJax>
-          , where <MathJax inline>{`\\(f_c(z) = z^2 + c\\)`}</MathJax>
+          , where <MathJax inline>{`\\(f_c(z) := z^2 + c\\)`}</MathJax>
         </p>
         <p>
           For any choice of{" "}
@@ -48,9 +48,9 @@ const Explanation = () => {
           with itself <MathJax inline>{`\\(n\\)`}</MathJax> times (i.e.{" "}
           <MathJax inline>{`\\(f_c(f_c(...f_c(z))) \\iff f_c^n(z)\\)`}</MathJax>
           ), the choice of <MathJax inline>{`\\(c\\)`}</MathJax> determines
-          whether an upper bound exists for the set of modulus values of the
-          recursive sequence as <MathJax inline>{`\\(n\\)`}</MathJax> tends to
-          infinity.
+          whether an upper bound exists for the modulus values of each element
+          in the recursive sequence as <MathJax inline>{`\\(n\\)`}</MathJax>{" "}
+          tends to infinity.
         </p>
 
         <p>
@@ -65,7 +65,7 @@ const Explanation = () => {
         <h3 className="text-xl font-bold text-white">Exercise</h3>
 
         <p>
-          <b>Example 1:</b> Choose <MathJax inline>{`\\(c := 0\\)`}</MathJax>
+          <b>Example 1:</b> Choose <MathJax inline>{`\\(c = 0\\)`}</MathJax>
         </p>
         <p>
           <MathJax
@@ -79,7 +79,7 @@ const Explanation = () => {
         </p>
 
         <p>
-          <b>Example 2:</b> Choose <MathJax inline>{`\\(c := 1+i\\)`}</MathJax>
+          <b>Example 2:</b> Choose <MathJax inline>{`\\(c = 1+i\\)`}</MathJax>
         </p>
         <p>
           <MathJax inline>{`\\(z_1 = 0^2 + 1+i = 1+i\\)`}</MathJax>
@@ -99,7 +99,7 @@ const Explanation = () => {
         </p>
 
         <p>
-          <b>Example 3:</b> Choose <MathJax inline>{`\\(c := -1\\)`}</MathJax>
+          <b>Example 3:</b> Choose <MathJax inline>{`\\(c = -1\\)`}</MathJax>
         </p>
         <p>
           <MathJax
@@ -111,9 +111,9 @@ const Explanation = () => {
           forces the sequence into a loop where each iteration oscillates
           between <MathJax inline>{`\\(0\\)`}</MathJax> and{" "}
           <MathJax inline>{`\\(-1\\)`}</MathJax> ad infinitum. While technically
-          diverging, the sequence does not exceed a modulus of{" "}
-          <MathJax inline>{`\\(|-1|\\)`}</MathJax>, so we can establish an upper
-          bound.
+          not converging on a single value, the sequence does not exceed a
+          modulus of <MathJax inline>{`\\(|-1|\\)`}</MathJax>, so we can
+          establish an upper bound.
         </p>
 
         <h3 className="text-xl font-bold text-white">
@@ -126,9 +126,7 @@ const Explanation = () => {
           <MathJax inline>{`\\(c \\in \\mathbb{C}\\)`}</MathJax> that maintain
           an upper bound as the sequence{" "}
           <MathJax inline>{`\\(z_{n+1} = z_n^2+c\\)`}</MathJax>, with{" "}
-          <MathJax inline>{`\\(z_0 := 0\\)`}</MathJax>, iterates to infinity
-          (or, as a corollary, as <MathJax inline>{`\\(c\\)`}</MathJax> is
-          infinitely squared).
+          <MathJax inline>{`\\(z_0 = 0\\)`}</MathJax>, iterates to infinity.
         </p>
 
         <p>
@@ -144,7 +142,7 @@ const Explanation = () => {
         <p>
           <MathJax inline>{`\\(M\\)`}</MathJax> is a well-connected set that
           produces chaotic oscillatory patterns near its boundary. By mapping
-          these coordinates through an adequate choice of coloring function{" "}
+          these coordinates through a well-chosen coloring function{" "}
           <MathJax inline>
             {`\\(C:\\mathbb{C} \\rightarrow [0,\\,1]^4\\)`} (complex number to
             RGBA tuple)
@@ -165,7 +163,7 @@ const Explanation = () => {
           recurrence relation{" "}
           <MathJax inline>{`\\(z_{n+1} = z_n^2 + c\\)`}</MathJax>, with a fixed
           starting point <MathJax inline>{`\\(z_0\\)`}</MathJax> (
-          <MathJax inline>{`\\(z_0 := 0\\)`}</MathJax> to be precise), has a
+          <MathJax inline>{`\\(z_0 = 0\\)`}</MathJax> to be precise), has a
           definable upper bound.
         </p>
 
@@ -181,7 +179,7 @@ const Explanation = () => {
         <p>
           Julia sets, like their counterpart, are well-connected (if and only if{" "}
           <MathJax inline>{`\\(c \\in M\\)`}</MathJax>*) sets yielded from
-          repeated composition of holomorphic function{" "}
+          repeated composition of function{" "}
           <MathJax inline>{`\\(f_c(z)\\)`}</MathJax>. They also possess
           multi-dimensional intricacies in the neighborhood of their boundaries,
           although in very distinct shapes.
@@ -224,9 +222,9 @@ const Explanation = () => {
 
         <p>
           It is intractable yet inspiring to conceive of the possible fractal
-          art in the hyper-dimensional Euclidian space of{" "}
+          art in the hyper-dimensional space of{" "}
           <MathJax inline>{`\\(\\mathbb{C}^2\\)`}</MathJax> by constructing a
-          bijective function mapping points in each Julia set to points in each
+          bijective mapping between points in each Julia set and points in each
           orthogonal, generalized Mandelbrot set.
         </p>
 
@@ -238,13 +236,16 @@ const Explanation = () => {
           While not an established term in mainstream mathematical literature,
           we coined this term to describe a suite of sets constructed by
           choosing any initial <MathJax inline>{`\\(z_0\\)`}</MathJax>, not just{" "}
-          <MathJax inline>{`\\(z_0 := 0\\)`}</MathJax>.
+          <MathJax inline>{`\\(z_0 = 0\\)`}</MathJax>. This is not, however, a
+          new idea: such perturbations of the initial conditions of recursive
+          systems like this one are an integral area of study in the field of
+          holomorphic dynamics.
         </p>
 
         <p>
-          HoloAtlas allows you to enable "experimental mode" to explore what the
-          hypothetical notion of a generalized Mandelbrot set may look like.
-          Feel free to toggle this feature at will.
+          HoloAtlas allows you to enable "experimental mode" to explore what
+          perturbing the starting point of the iconic Mandelbrot set may look
+          like. Feel free to toggle this feature at will.
         </p>
       </div>
     </MathJaxContext>

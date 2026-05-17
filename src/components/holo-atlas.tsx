@@ -17,7 +17,7 @@ const HoloAtlas = () => {
       className="space-y-6 overflow-auto px-8 py-2 h-full scrollbar-thin [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-400 [&::-webkit-scrollbar-thumb]:rounded-full scrollbar-gutter-stable"
     >
       <h1 className="text-3xl font-bold border-b border-gray-400/50 pb-3 text-white">
-        About the HoloAtlas
+        HoloAtlas
       </h1>
       <p>
         Use the <b>holomorphic atlas</b> to explore the mesmerizing patterns and
@@ -58,8 +58,7 @@ const HoloAtlas = () => {
       </h2>
       <p>
         I created this digital atlas to express my intersecting interests in
-        mathematics, graphics programming, software development, and digital
-        cartography.
+        mathematics, graphics programming, and digital cartography.
       </p>
       <p>
         One of the reasons I love making educational tools is not purely for the
