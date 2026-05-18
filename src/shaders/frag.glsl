@@ -1,7 +1,8 @@
 #version 300 es
-#define INT_MAX 0x7FFFFFFF
-precision mediump float;
+precision highp float;
+precision highp int;
 
+#define INT_MAX 0x7FFFFFFF
 uniform vec2 u_resolution;
 uniform vec2 u_input;
 uniform vec2 u_offset;
