@@ -1,14 +1,14 @@
 import { Set } from "../types/set";
 import { ColoringAlgorithm } from "../types/coloring-algorithm";
-import { Position } from "../utils/position";
+import { Point } from "../utils/position";
 
 export type MapState = {
   view: {
     main: Set;
     mini: Set;
   };
-  position: Position;
-  offset: Position;
+  mousePosition: Point;
+  canvasOffset: Point;
   zoom: number;
   dynamic: boolean;
   iterations: number;
@@ -21,11 +21,11 @@ export const defaultState: MapState = {
     main: Set.Mandelbrot,
     mini: Set.Julia,
   },
-  position: new Position({
+  mousePosition: new Point({
     x: window.innerWidth / 2.0,
     y: window.innerHeight / 2.0,
   }),
-  offset: new Position({
+  canvasOffset: new Point({
     x: window.innerWidth / 2.0,
     y: window.innerHeight / 2.0,
   }),
@@ -56,12 +56,12 @@ const isValidState = (state: any): boolean => {
       isObject(state.view) &&
       isSet(state.view.main) &&
       isSet(state.view.mini) &&
-      isObject(state.position) &&
-      isNumber(state.position.x) &&
-      isNumber(state.position.y) &&
-      isObject(state.offset) &&
-      isNumber(state.offset.x) &&
-      isNumber(state.offset.y) &&
+      isObject(state.mousePosition) &&
+      isNumber(state.mousePosition.x) &&
+      isNumber(state.mousePosition.y) &&
+      isObject(state.canvasOffset) &&
+      isNumber(state.canvasOffset.x) &&
+      isNumber(state.canvasOffset.y) &&
       isNumber(state.zoom) &&
       state.zoom > 0 &&
       isBoolean(state.dynamic) &&
@@ -93,8 +93,8 @@ export const loadURLState = (): MapState => {
       return defaultState;
     }
 
-    decodedState.position = new Position(decodedState.position);
-    decodedState.offset = new Position(decodedState.offset);
+    decodedState.mousePosition = new Point(decodedState.mousePosition);
+    decodedState.canvasOffset = new Point(decodedState.canvasOffset);
 
     return decodedState as MapState;
   } catch (e) {

@@ -151,14 +151,14 @@ export const render = (
 
   gl.uniform2f(
     uniformLocations.input,
-    state.position.toArgand().re,
-    state.position.toArgand().im,
+    state.mousePosition.openGl().x,
+    state.mousePosition.openGl().y,
   );
 
   gl.uniform2f(
     uniformLocations.offset,
-    state.offset.toArgand().re,
-    state.offset.toArgand().im,
+    state.canvasOffset.openGl().x,
+    state.canvasOffset.openGl().y,
   );
 
   gl.uniform1f(uniformLocations.zoom, state.zoom);

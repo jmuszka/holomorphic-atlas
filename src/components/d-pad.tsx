@@ -5,15 +5,15 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useApp } from "../stores/app-context";
-import { Position } from "../utils/position";
+import { Point } from "../utils/position";
 
 const DPad = () => {
   const { state, setState } = useApp();
 
-  const updateOffset = (adjustment: Position) => {
+  const updateOffset = (adjustment: Point) => {
     setState({
       ...state,
-      offset: adjustment,
+      canvasOffset: adjustment,
     });
   };
 
@@ -25,9 +25,9 @@ const DPad = () => {
         className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
         onClick={() =>
           updateOffset(
-            new Position({
-              x: state.offset.getPosition().x,
-              y: state.offset.getPosition().y + 50 / state.zoom,
+            new Point({
+              x: state.canvasOffset.raw().x,
+              y: state.canvasOffset.raw().y + 50 / state.zoom,
             }),
           )
         }
@@ -42,9 +42,9 @@ const DPad = () => {
         className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
         onClick={() =>
           updateOffset(
-            new Position({
-              x: state.offset.getPosition().x + 50 / state.zoom,
-              y: state.offset.getPosition().y,
+            new Point({
+              x: state.canvasOffset.raw().x + 50 / state.zoom,
+              y: state.canvasOffset.raw().y,
             }),
           )
         }
@@ -60,9 +60,9 @@ const DPad = () => {
         className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
         onClick={() =>
           updateOffset(
-            new Position({
-              x: state.offset.getPosition().x - 50 / state.zoom,
-              y: state.offset.getPosition().y,
+            new Point({
+              x: state.canvasOffset.raw().x - 50 / state.zoom,
+              y: state.canvasOffset.raw().y,
             }),
           )
         }
@@ -77,9 +77,9 @@ const DPad = () => {
         className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
         onClick={() =>
           updateOffset(
-            new Position({
-              x: state.offset.getPosition().x,
-              y: state.offset.getPosition().y - 50 / state.zoom,
+            new Point({
+              x: state.canvasOffset.raw().x,
+              y: state.canvasOffset.raw().y - 50 / state.zoom,
             }),
           )
         }

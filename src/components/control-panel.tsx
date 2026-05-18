@@ -8,6 +8,7 @@ import { copy } from "../utils/clipboard";
 import { ToastCopied } from "../utils/toast";
 import { Set } from "../types/set";
 import { ColoringAlgorithm } from "../types/coloring-algorithm";
+import { toComplex } from "../utils/position";
 
 interface ControlPanelProps {
   onExportPng: () => void;
@@ -44,7 +45,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
             Point:{" "}
             <MathJax
               inline
-            >{`\\(${state.position.toArgand().re.toFixed(3)} ${state.position.toArgand().im >= 0 ? "+" : "-"} ${Math.abs(state.position.toArgand().im).toFixed(3)}i\\)`}</MathJax>
+            >{`\\(${toComplex(state.mousePosition, state.canvasOffset, state.zoom).re.toFixed(3)} ${toComplex(state.mousePosition, state.canvasOffset, state.zoom).im >= 0 ? "+" : "-"} ${Math.abs(toComplex(state.mousePosition, state.canvasOffset, state.zoom).im).toFixed(3)}i\\)`}</MathJax>
           </p>
         </MathJaxContext>
         <div className="flex flex-col my-1 text-white">

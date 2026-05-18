@@ -1,4 +1,4 @@
-export class Position {
+export class Point {
   private x: number;
   private y: number;
 
@@ -7,25 +7,31 @@ export class Position {
     this.y = pos.y;
   }
 
-  getPosition(): { x: number; y: number } {
+  raw(): { x: number; y: number } {
     return {
       x: this.x,
       y: this.y,
     };
   }
 
-  toOpenGl(): { x: number; y: number } {
+  openGl(): { x: number; y: number } {
     return {
       x: (2 * this.x - window.innerWidth) / window.innerWidth,
       y: (window.innerHeight - 2 * this.y) / window.innerHeight,
     };
   }
-
-  toArgand(): { re: number; im: number } {
-    const openGl = this.toOpenGl();
-    return {
-      re: 2.0 * openGl.x,
-      im: openGl.y,
-    };
-  }
 }
+
+export const toComplex = (
+  mousePosition: Point,
+  canvasOffset: Point,
+  zoom: number,
+): { re: number; im: number } => {
+  return {
+    re:
+      ((window.innerWidth / window.innerHeight) *
+        (mousePosition.openGl().x - canvasOffset.openGl().x)) /
+      zoom,
+    im: (mousePosition.openGl().y - canvasOffset.openGl().y) / zoom,
+  };
+};

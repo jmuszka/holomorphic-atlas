@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import Toast from "./components/toast";
 import { render, initGL, type GLContext } from "./shaders/render";
-import { Position } from "./utils/position";
+import { Point, toComplex } from "./utils/position";
 import InfoMenu from "./components/info-menu";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
 import { isMobile } from "./utils/is-mobile";
@@ -77,15 +77,9 @@ const App = () => {
           setState({
             ...state,
             dynamic: !state.dynamic,
-            position: new Position({
-              x:
-                e.clientX -
-                state.offset.getPosition().x +
-                window.innerWidth / 2,
-              y:
-                e.clientY -
-                state.offset.getPosition().y +
-                window.innerHeight / 2,
+            mousePosition: new Point({
+              x: e.clientX,
+              y: e.clientY,
             }),
           });
         }}
@@ -108,15 +102,13 @@ const App = () => {
 
             setState({
               ...state,
-              offset: new Position({
-                x:
-                  state.offset.getPosition().x +
-                  ((window.innerHeight / window.innerWidth) *
-                    (e.clientX - mousePos.x)) /
-                    state.zoom,
-                y:
-                  state.offset.getPosition().y +
-                  (e.clientY - mousePos.y) / state.zoom,
+              mousePosition: new Point({
+                x: state.mousePosition.raw().x + (e.clientX - mousePos.x),
+                y: state.mousePosition.raw().y + (e.clientY - mousePos.y),
+              }),
+              canvasOffset: new Point({
+                x: state.canvasOffset.raw().x + (e.clientX - mousePos.x),
+                y: state.canvasOffset.raw().y + (e.clientY - mousePos.y),
               }),
             });
           }
@@ -125,8 +117,7 @@ const App = () => {
             if (state.dynamic)
               setState({
                 ...state,
-                //position: new Position({ x: e.clientX, y: e.clientY })
-                position: new Position({
+                mousePosition: new Point({
                   x: e.clientX,
                   y: e.clientY,
                 }),
@@ -140,12 +131,29 @@ const App = () => {
           });
         }}
         onWheel={(e) => {
-          const zoomDelta = e.deltaY / window.innerHeight;
-          const rate = state.zoom;
+          setState((s) => {
+            const zoomDelta = e.deltaY / window.innerHeight;
+            const rate = s.zoom;
+            const newZoom = s.zoom - zoomDelta * rate;
 
-          setState({
-            ...state,
-            zoom: state.zoom - zoomDelta * rate,
+            const zoomRatio = newZoom / s.zoom;
+
+            const off_x =
+              e.clientX - (e.clientX - s.canvasOffset.raw().x) * zoomRatio;
+            const off_y =
+              e.clientY - (e.clientY - s.canvasOffset.raw().y) * zoomRatio;
+
+            const mouseX =
+              e.clientX + (s.mousePosition.raw().x - e.clientX) * zoomRatio;
+            const mouseY =
+              e.clientY + (s.mousePosition.raw().y - e.clientY) * zoomRatio;
+
+            return {
+              ...s,
+              zoom: newZoom,
+              canvasOffset: new Point({ x: off_x, y: off_y }),
+              mousePosition: new Point({ x: mouseX, y: mouseY }),
+            };
           });
         }}
       />
@@ -159,8 +167,8 @@ const App = () => {
         </p>
         <canvas
           ref={miniCanvasRef}
-          width={window.innerWidth / 3.7}
-          height={window.innerHeight / 3.0}
+          width={window.innerWidth / 3.5}
+          height={window.innerHeight / 3.5}
         />
       </div>
 
@@ -183,7 +191,7 @@ const App = () => {
           Offset:{" "}
           <MathJax
             inline
-          >{`\\(${state.offset.toArgand().re.toFixed(3)} ${state.offset.toArgand().im >= 0 ? "+" : "-"} ${Math.abs(state.offset.toArgand().im).toFixed(3)}i\\)`}</MathJax>
+          >{`\\(${toComplex(state.canvasOffset, new Point({ x: window.innerWidth / 2, y: window.innerHeight / 2 }), state.zoom).re.toFixed(3)} ${toComplex(state.canvasOffset, new Point({ x: window.innerWidth / 2, y: window.innerHeight / 2 }), state.zoom).im >= 0 ? "+" : "-"} ${Math.abs(toComplex(state.canvasOffset, new Point({ x: window.innerWidth / 2, y: window.innerHeight / 2 }), state.zoom).im).toFixed(3)}i\\)`}</MathJax>
         </p>
       </MathJaxContext>
     </>

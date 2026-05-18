@@ -53,6 +53,7 @@ vec4 escape_time(float x, float y, float x0, float y0)
 
 void main(void)
 {
+  /*
   // Window-relative pixel to Argand-coords
   vec4 coords = vec4(2.0*gl_FragCoord.x/u_resolution.x - 1.0, 2.0*gl_FragCoord.y/u_resolution.y - 1.0, 0.0, 1.0);
   // Scale by display ratio to maintain 1:1 opengl to argand mapping
@@ -60,7 +61,16 @@ void main(void)
   // Apply zoom 
   coords = vec4(coords.x / u_zoom, coords.y / u_zoom, coords.zw);
   // Offset coords 
-  coords = vec4(coords.x - u_offset.x, coords.y - u_offset.y, coords.zw);
+  coords = vec4(coords.x - u_offset.x * (u_resolution.x / u_resolution.y) / u_zoom, coords.y - u_offset.y / u_zoom, coords.zw);
+  */
+
+  // PIXEL to OPENGL 
+  vec4 coords = vec4(2.0f * gl_FragCoord.x / u_resolution.x - 1.0f, 2.0f * gl_FragCoord.y / u_resolution.y - 1.0f, 0.0f, 1.0f);
+
+  // PIXEL to COMPLEX
+  coords = vec4((u_resolution.x / u_resolution.y) * (coords.x - u_offset.x) / u_zoom, (coords.y - u_offset.y) / u_zoom, 0.0f, 1.0f);
+  // INPUT to COMPLEX
+  vec2 point = vec2((u_resolution.x / u_resolution.y) * (u_input.x - u_offset.x) / u_zoom, (u_input.y - u_offset.y) / u_zoom);
 
   float x, y, x0, y0;
 
@@ -75,8 +85,8 @@ void main(void)
       // z_0
       if (u_experimental == 1)
       {
-        x = u_input.x; 
-        y = u_input.y; 
+        x = point.x; 
+        y = point.y; 
       }
       else
       {
@@ -88,8 +98,8 @@ void main(void)
     case 1:
       // Set Julia parameters
       // z_0
-      x0 = u_input.x; 
-      y0 = u_input.y;
+      x0 = point.x; 
+      y0 = point.y;
 
       // c
       x = coords.x; 
