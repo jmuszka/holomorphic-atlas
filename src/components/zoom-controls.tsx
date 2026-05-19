@@ -25,6 +25,16 @@ const ZoomControls = () => {
                 (window.innerHeight / 2 - state.canvasOffset.raw().y) /
                   ZOOM_FACTOR,
             }),
+            mousePosition: new Point({
+              x:
+                window.innerWidth / 2 +
+                (state.mousePosition.raw().x - window.innerWidth / 2) /
+                  ZOOM_FACTOR,
+              y:
+                window.innerHeight / 2 +
+                (state.canvasOffset.raw().y - window.innerHeight / 2) /
+                  ZOOM_FACTOR,
+            }),
           })
         }
         title="Zoom Out"
@@ -46,6 +56,16 @@ const ZoomControls = () => {
               y:
                 window.innerHeight / 2 -
                 (window.innerHeight / 2 - state.canvasOffset.raw().y) *
+                  ZOOM_FACTOR,
+            }),
+            mousePosition: new Point({
+              x:
+                window.innerWidth / 2 +
+                (state.mousePosition.raw().x - window.innerWidth / 2) *
+                  ZOOM_FACTOR,
+              y:
+                window.innerHeight / 2 +
+                (state.canvasOffset.raw().y - window.innerHeight / 2) *
                   ZOOM_FACTOR,
             }),
           })

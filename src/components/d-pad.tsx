@@ -9,13 +9,7 @@ import { Point } from "../utils/position";
 
 const DPad = () => {
   const { state, setState } = useApp();
-
-  const updateOffset = (adjustment: Point) => {
-    setState({
-      ...state,
-      canvasOffset: adjustment,
-    });
-  };
+  const DELTA = 50;
 
   return (
     <div className="grid grid-cols-3 gap-1 bg-gray-600/40 p-2 rounded-xl backdrop-blur-sm border border-gray-400/30">
@@ -24,12 +18,17 @@ const DPad = () => {
         role="button"
         className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
         onClick={() =>
-          updateOffset(
-            new Point({
+          setState({
+            ...state,
+            canvasOffset: new Point({
               x: state.canvasOffset.raw().x,
-              y: state.canvasOffset.raw().y + 50 / state.zoom,
+              y: state.canvasOffset.raw().y + DELTA,
             }),
-          )
+            mousePosition: new Point({
+              x: state.mousePosition.raw().x,
+              y: state.mousePosition.raw().y + DELTA,
+            }),
+          })
         }
         title="Pan Up"
       >
@@ -41,12 +40,17 @@ const DPad = () => {
         role="button"
         className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
         onClick={() =>
-          updateOffset(
-            new Point({
-              x: state.canvasOffset.raw().x + 50 / state.zoom,
+          setState({
+            ...state,
+            canvasOffset: new Point({
+              x: state.canvasOffset.raw().x + DELTA,
               y: state.canvasOffset.raw().y,
             }),
-          )
+            mousePosition: new Point({
+              x: state.mousePosition.raw().x + DELTA,
+              y: state.mousePosition.raw().y,
+            }),
+          })
         }
         title="Pan Left"
       >
@@ -59,12 +63,17 @@ const DPad = () => {
         role="button"
         className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
         onClick={() =>
-          updateOffset(
-            new Point({
-              x: state.canvasOffset.raw().x - 50 / state.zoom,
+          setState({
+            ...state,
+            canvasOffset: new Point({
+              x: state.canvasOffset.raw().x - DELTA,
               y: state.canvasOffset.raw().y,
             }),
-          )
+            mousePosition: new Point({
+              x: state.mousePosition.raw().x - DELTA,
+              y: state.mousePosition.raw().y,
+            }),
+          })
         }
         title="Pan Right"
       >
@@ -76,12 +85,17 @@ const DPad = () => {
         role="button"
         className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
         onClick={() =>
-          updateOffset(
-            new Point({
+          setState({
+            ...state,
+            canvasOffset: new Point({
               x: state.canvasOffset.raw().x,
-              y: state.canvasOffset.raw().y - 50 / state.zoom,
+              y: state.canvasOffset.raw().y - DELTA,
             }),
-          )
+            mousePosition: new Point({
+              x: state.mousePosition.raw().x,
+              y: state.mousePosition.raw().y - DELTA,
+            }),
+          })
         }
         title="Pan Down"
       >
