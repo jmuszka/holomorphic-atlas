@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useMemo, useEffect } from "react";
 import Draggable from "react-draggable";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
 import { Share2, Download, Info } from "lucide-react";
@@ -27,6 +27,23 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
   } = useApp();
 
   const nodeRef = useRef(null);
+  const pointRef = useRef(null);
+  const pointLabel = useMemo(() => {
+    return `\\(${toComplex(state.mousePosition, state.canvasOffset, state.zoom).re.toFixed(3)} ${toComplex(state.mousePosition, state.canvasOffset, state.zoom).im >= 0 ? "+" : "-"} ${Math.abs(toComplex(state.mousePosition, state.canvasOffset, state.zoom).im).toFixed(3)}i\\)`;
+  }, [state]);
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((window as any).MathJax && pointRef.current) {
+      // 1. Clear just this specific element's cache
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).MathJax.typesetClear([pointRef.current]);
+
+      // 2. Actually trigger the re-render for just this element
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).MathJax.typesetPromise([pointRef.current]);
+    }
+  }, [pointLabel]);
 
   return (
     <Draggable nodeRef={nodeRef} handle=".drag-handle">
@@ -41,12 +58,14 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
           View: <b>{Set[state.view.main]}</b>
         </p>
         <MathJaxContext>
-          <p className="text-white">
+          <div className="text-white">
             Point:{" "}
-            <MathJax
-              inline
-            >{`\\(${toComplex(state.mousePosition, state.canvasOffset, state.zoom).re.toFixed(3)} ${toComplex(state.mousePosition, state.canvasOffset, state.zoom).im >= 0 ? "+" : "-"} ${Math.abs(toComplex(state.mousePosition, state.canvasOffset, state.zoom).im).toFixed(3)}i\\)`}</MathJax>
-          </p>
+            <MathJax inline>
+              <div className="inline" ref={pointRef}>
+                {pointLabel}
+              </div>
+            </MathJax>
+          </div>
         </MathJaxContext>
         <div className="flex flex-col my-1 text-white">
           <p>

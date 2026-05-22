@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import Toast from "./components/toast";
 import { render, initGL, type GLContext } from "./shaders/render";
 import { Point, toComplex } from "./utils/position";
@@ -19,6 +19,23 @@ const App = () => {
   const miniGLRef = useRef<GLContext | null>(null);
 
   const { state, setState, enableTouchControls, infoMenu } = useApp();
+  const offsetLabel = useMemo(() => {
+    return `\\(${toComplex(state.canvasOffset, new Point({ x: window.innerWidth / 2, y: window.innerHeight / 2 }), state.zoom).re.toFixed(3)} ${toComplex(state.canvasOffset, new Point({ x: window.innerWidth / 2, y: window.innerHeight / 2 }), state.zoom).im >= 0 ? "+" : "-"} ${Math.abs(toComplex(state.canvasOffset, new Point({ x: window.innerWidth / 2, y: window.innerHeight / 2 }), state.zoom).im).toFixed(3)}i\\)`;
+  }, [state]);
+  const offsetRef = useRef(null);
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((window as any).MathJax && offsetRef.current) {
+      // 1. Clear just this specific element's cache
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).MathJax.typesetClear([offsetRef.current]);
+
+      // 2. Actually trigger the re-render for just this element
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).MathJax.typesetPromise([offsetRef.current]);
+    }
+  }, [offsetLabel]);
 
   const [mousePos, setMousePos] = useState<{ x: number; y: number }>({
     x: window.innerWidth / 2,
@@ -185,14 +202,16 @@ const App = () => {
 
       {/* Offset label */}
       <MathJaxContext>
-        <p
+        <div
           className={`fixed z-5 left-1 bottom-0 ${infoMenu ? "select-none" : ""}`}
         >
           Offset:{" "}
-          <MathJax
-            inline
-          >{`\\(${toComplex(state.canvasOffset, new Point({ x: window.innerWidth / 2, y: window.innerHeight / 2 }), state.zoom).re.toFixed(3)} ${toComplex(state.canvasOffset, new Point({ x: window.innerWidth / 2, y: window.innerHeight / 2 }), state.zoom).im >= 0 ? "+" : "-"} ${Math.abs(toComplex(state.canvasOffset, new Point({ x: window.innerWidth / 2, y: window.innerHeight / 2 }), state.zoom).im).toFixed(3)}i\\)`}</MathJax>
-        </p>
+          <MathJax inline>
+            <div className="inline" ref={offsetRef}>
+              {offsetLabel}
+            </div>
+          </MathJax>
+        </div>
       </MathJaxContext>
     </>
   );
