@@ -43,6 +43,47 @@ const App = () => {
   });
   const hasMovedRef = useRef(false);
 
+  const prevSizeRef = useRef({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const newWidth = window.innerWidth;
+      const newHeight = window.innerHeight;
+      const prevWidth = prevSizeRef.current.width;
+      const prevHeight = prevSizeRef.current.height;
+
+      setState((s) => {
+        const scale = newHeight / prevHeight;
+        const widthDiff = (newWidth - prevWidth * scale) / 2;
+
+        return {
+          ...s,
+          mousePosition: new Point({
+            x: s.mousePosition.raw().x * scale + widthDiff,
+            y: s.mousePosition.raw().y * scale,
+          }),
+          canvasOffset: new Point({
+            x: s.canvasOffset.raw().x * scale + widthDiff,
+            y: s.canvasOffset.raw().y * scale,
+          }),
+        };
+      });
+
+      setMousePos({
+        x: newWidth / 2,
+        y: newHeight / 2,
+      });
+
+      prevSizeRef.current = { width: newWidth, height: newHeight };
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [setState]);
+
   // OpenGL rendering for each canvas
   useEffect(() => {
     if (canvasRef.current && !mainGLRef.current) {
