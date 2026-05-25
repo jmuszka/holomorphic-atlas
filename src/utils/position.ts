@@ -20,6 +20,13 @@ export class Point {
       y: (window.innerHeight - 2 * this.y) / window.innerHeight,
     };
   }
+
+  toJSON() {
+    return {
+      x: this.x,
+      y: this.y,
+    };
+  }
 }
 
 export const toComplex = (

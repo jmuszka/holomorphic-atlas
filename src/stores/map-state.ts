@@ -76,8 +76,8 @@ const isValidState = (state: any): boolean => {
 };
 
 export const loadURLState = (): MapState => {
-  const encodedState = new URL(window.location.href).searchParams.get("state");
   const url = new URL(window.location.href);
+  const encodedState = url.searchParams.get("state");
 
   if (!encodedState) {
     return defaultState;
@@ -91,6 +91,28 @@ export const loadURLState = (): MapState => {
       url.searchParams.delete("state");
       window.history.replaceState(null, "", url.toString());
       return defaultState;
+    }
+
+    if (decodedState.sourceViewport) {
+      // Use height as the reference to maintain the vertical scale (imaginary axis)
+      // This prevents "warping" because the fractal's aspect ratio is handled
+      // by the window's aspect ratio in toComplex.
+      const scale = window.innerHeight / decodedState.sourceViewport.height;
+
+      // Adjust positions uniformly to keep the fractal's features at the same
+      // relative size, then center the change for the X axis.
+      decodedState.mousePosition.x *= scale;
+      decodedState.mousePosition.y *= scale;
+      decodedState.canvasOffset.x *= scale;
+      decodedState.canvasOffset.y *= scale;
+
+      // Offset X to account for the difference in width after scaling
+      const widthDiff =
+        (window.innerWidth - decodedState.sourceViewport.width * scale) / 2;
+      decodedState.mousePosition.x += widthDiff;
+      decodedState.canvasOffset.x += widthDiff;
+
+      delete decodedState.sourceViewport;
     }
 
     decodedState.mousePosition = new Point(decodedState.mousePosition);
@@ -109,11 +131,34 @@ export const loadURLState = (): MapState => {
 };
 
 export const updateURLState = (state: MapState | null) => {
-  const encodedState = btoa(JSON.stringify(state || {}));
-
   const url = new URL(window.location.href);
-  if (state) url.searchParams.set("state", encodedState);
-  else url.searchParams.delete("state");
 
-  window.history.replaceState(null, "", url.toString());
+  if (!state) {
+    url.searchParams.delete("state");
+    window.history.replaceState(null, "", url.toString());
+    return;
+  }
+
+  const dataToEncode = {
+    view: state.view,
+    mousePosition: state.mousePosition,
+    canvasOffset: state.canvasOffset,
+    zoom: state.zoom,
+    dynamic: state.dynamic,
+    iterations: state.iterations,
+    experimental: state.experimental,
+    coloringAlgorithm: state.coloringAlgorithm,
+    sourceViewport: {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    },
+  };
+
+  try {
+    const encodedState = btoa(JSON.stringify(dataToEncode));
+    url.searchParams.set("state", encodedState);
+    window.history.replaceState(null, "", url.toString());
+  } catch (e) {
+    console.error("Failed to encode state:", e);
+  }
 };
