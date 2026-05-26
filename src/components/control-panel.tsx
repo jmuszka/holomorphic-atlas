@@ -49,9 +49,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
     <Draggable nodeRef={nodeRef} handle=".drag-handle">
       <div
         ref={nodeRef}
-        className={`fixed top-0 left-0 bg-gray-600/80 px-5 py-3 m-1 rounded-xl shadow-lg border border-gray-400 backdrop-blur-sm z-10 ${infoMenu ? "select-none pointer-events-none" : ""}`}
+        className={`fixed flex flex-col gap-1 top-0 left-0 bg-slate-900/80 pl-5 pr-5 min-w-[300px] py-4 m-1 rounded-xl shadow-lg border border-gray-400/30 backdrop-blur-sm z-10 ${infoMenu ? "select-none pointer-events-none" : ""}`}
       >
-        <div className="drag-handle cursor-move bg-gray-600/50 bg-gray-600 p-1 mb-2 rounded text-center text-[10px] uppercase tracking-widest font-bold text-white">
+        <div className="drag-handle cursor-move bg-slate-800/50 p-1 mb-2 rounded text-center text-[10px] uppercase tracking-widest font-bold text-white w-full">
           :::
         </div>
         <p className="text-white">
@@ -80,7 +80,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
             onChange={(e) =>
               setState({ ...state, iterations: parseInt(e.target.value) })
             }
-            className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+            className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
           />
         </div>
         <div className="flex flex-col my-1 text-white">
@@ -109,7 +109,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
                 coloringAlgorithm: parseInt(e.target.value),
               })
             }
-            className="w-full bg-gray-700 text-white rounded-lg p-1 mt-1 border border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-slate-800 text-white rounded-lg p-1 mt-1 border border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {Object.keys(ColoringAlgorithm)
               .filter((key) => isNaN(Number(key)))
@@ -169,7 +169,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
             <span className="relative top-[2.5px]">Touch controls?</span>
           </p>
         </div>
-        <br />
+
+        <hr className="my-3 text-gray-400/30" />
+
         <p className="text-xs w-[200px] text-white">
           Hint: Left-click to toggle dynamic <br />
           rendering; right-click to toggle view.

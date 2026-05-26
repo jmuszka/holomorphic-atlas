@@ -12,11 +12,11 @@ const DPad = () => {
   const DELTA = 50;
 
   return (
-    <div className="grid grid-cols-3 gap-1 bg-gray-600/40 p-2 rounded-xl backdrop-blur-sm border border-gray-400/30">
+    <div className="grid grid-cols-3 gap-1 bg-slate-900/80 p-2 rounded-xl backdrop-blur-sm border border-gray-400/30">
       <div />
       <button
         role="button"
-        className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
+        className="p-2 rounded-lg shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
         onClick={() =>
           setState({
             ...state,

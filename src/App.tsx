@@ -86,15 +86,21 @@ const App = () => {
 
   // OpenGL rendering for each canvas
   useEffect(() => {
-    if (canvasRef.current && !mainGLRef.current) {
-      mainGLRef.current = initGL(canvasRef.current);
-    }
-    if (miniCanvasRef.current && !miniGLRef.current) {
-      miniGLRef.current = initGL(miniCanvasRef.current);
-    }
+    const initOrUpdateGL = (
+      ref: React.RefObject<HTMLCanvasElement | null>,
+      glRef: React.MutableRefObject<GLContext | null>,
+      isMain: boolean,
+    ) => {
+      if (ref.current) {
+        if (!glRef.current || glRef.current.gl.canvas !== ref.current) {
+          glRef.current = initGL(ref.current);
+        }
+        if (glRef.current) render(glRef.current, state, isMain);
+      }
+    };
 
-    if (mainGLRef.current) render(mainGLRef.current, state, true);
-    if (miniGLRef.current) render(miniGLRef.current, state, false);
+    initOrUpdateGL(canvasRef, mainGLRef, true);
+    initOrUpdateGL(miniCanvasRef, miniGLRef, false);
   }, [state]);
 
   const exportPng = () => {
@@ -109,6 +115,9 @@ const App = () => {
     link.href = canvas.toDataURL("image/png");
     link.click();
   };
+
+  const miniWidth = Math.floor(window.innerWidth / 3.5);
+  const miniHeight = Math.floor(window.innerHeight / 3.5);
 
   return (
     <>
@@ -217,17 +226,23 @@ const App = () => {
       />
 
       {/* Minimap canvas */}
-      <div className="fixed bottom-0 right-0 outline-solid m-3">
+      <div className="fixed bottom-0 right-0 m-3 flex flex-col items-center gap-1 z-20">
         <p
-          className={`absolute -top-6 w-full text-center ${infoMenu ? "select-none" : ""}`}
+          className={`${infoMenu ? "select-none" : ""} text-white text-sm font-medium`}
         >
           View: <b>{Set[state.view.mini]}</b>
         </p>
-        <canvas
-          ref={miniCanvasRef}
-          width={window.innerWidth / 3.5}
-          height={window.innerHeight / 3.5}
-        />
+        <div
+          className="outline-solid outline-slate-400/30 rounded-3xl overflow-hidden bg-slate-900/50 backdrop-blur-sm"
+          style={{ width: miniWidth, height: miniHeight }}
+        >
+          <canvas
+            ref={miniCanvasRef}
+            width={miniWidth}
+            height={miniHeight}
+            className="block w-full h-full"
+          />
+        </div>
       </div>
 
       {/* Control panel*/}

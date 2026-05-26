@@ -34,10 +34,10 @@ const InfoMenu = () => {
 
   return (
     <>
-      <div className="fixed z-[60] bg-gray-900/70 w-full h-full"></div>
+      <div className="fixed z-[60] bg-black/50 w-full h-full"></div>
       <div className="flex flex-col justify-center w-full h-full fixed z-[70] items-center">
-        <div className="bg-gray-600/80 rounded-xl shadow-lg border border-gray-400 max-w-2xl w-full backdrop-blur-sm text-lg max-h-[90vh] flex flex-col overflow-hidden">
-          <div className="flex flex-row justify-end px-8 pt-6">
+        <div className="bg-slate-900/80 rounded-xl shadow-lg border border-gray-400 max-w-2xl w-full backdrop-blur-sm text-lg max-h-[90vh] flex flex-col overflow-hidden">
+          <div className="flex flex-row justify-end items-center px-8 py-4">
             <button
               className="p-1.5 bg-gray-600/50 hover:bg-gray-600 rounded-lg transition-colors"
               onClick={() => setInfoMenu(false)}
@@ -52,7 +52,7 @@ const InfoMenu = () => {
             </InfoMenuContext.Provider>
           </div>
 
-          <div className="flex flex-row justify-between items-center px-8 py-6 border-t border-gray-400/30">
+          <div className="flex flex-row justify-between items-center px-8 py-4 border-t border-slate-400/30">
             <button
               className="p-2 hover:bg-gray-600/50 rounded-full transition-colors"
               onClick={prev}

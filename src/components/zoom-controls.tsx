@@ -7,10 +7,10 @@ const ZoomControls = () => {
   const ZOOM_FACTOR = 1.5;
 
   return (
-    <div className="flex flex-row gap-2 justify-center bg-gray-600/40 p-2 rounded-xl backdrop-blur-sm border border-gray-400/30">
+    <div className="flex flex-row gap-2 justify-center bg-slate-900/80 p-2 rounded-xl backdrop-blur-sm border border-gray-400/30">
       <button
         role="button"
-        className="p-2 bg-gray-600/80 hover:bg-gray-700/80 rounded-full shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
+        className="p-2 rounded-full shadow-lg border border-gray-400 backdrop-blur-sm text-white transition-colors"
         onClick={() =>
           setState({
             ...state,

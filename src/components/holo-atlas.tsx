@@ -29,7 +29,7 @@ const HoloAtlas = () => {
       <h2 className="text-2xl font-bold border-b border-gray-400/50 pb-3 text-white">
         Controls
       </h2>
-      <div className="bg-gray-500/30 p-6 rounded-lg text-sm space-y-3 text-gray-200">
+      <div className="bg-slate-800/80 p-6 rounded-lg text-sm space-y-3 text-gray-200">
         <li>
           <b>Scroll</b> to zoom into the set's infinite fractal depth.
         </li>
