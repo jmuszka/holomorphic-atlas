@@ -149,6 +149,7 @@ export const updateURLState = (state: MapState | null) => {
     zoom: state.zoom,
     dynamic: state.dynamic,
     iterations: state.iterations,
+    p: state.p,
     experimental: state.experimental,
     coloringAlgorithm: state.coloringAlgorithm,
     sourceViewport: {

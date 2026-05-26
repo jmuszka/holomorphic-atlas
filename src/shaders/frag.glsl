@@ -20,27 +20,27 @@ vec4 escape_time(float x, float y, float x0, float y0)
   int iteration = 0;
 
   // Emulating z_{n+1} = z_{n}^2 + c where c := x + yi
-  for (int i = 0; i < INT_MAX; i++) 
+  for (int i = 0; i < INT_MAX; i++)
   {
-    // If diverges before iteration limit (modulus > 2), exit loop
-    if (x*x + y*y > 4.0 || iteration >= u_max_iterations) break;
+    // If diverges before iteration limit (modulus > p^2), exit loop
+    if (x*x + y*y > float(u_p)*float(u_p) || iteration >= u_max_iterations) break;
 
     // Iterate recurrence relation
     float temp;
     float a = x;
     float b = y;
 
+    // Multiply
     for (int j = 1; j < u_p; j++)
     {
-      // Multiply
-      temp = a*x - b*y;
-      b = a*y + b*x;
-      a = temp;
-
-      // Add constant
-      x = a + x0;
-      y = b + y0;
+        temp = a*x - b*y;
+        b = a*y + b*x;
+        a = temp;
     }
+
+    // Add constant
+    x = a + x0;
+    y = b + y0;
 
     iteration++;
   }
@@ -73,13 +73,13 @@ void main(void)
   vec4 coords = vec4(2.0*gl_FragCoord.x/u_resolution.x - 1.0, 2.0*gl_FragCoord.y/u_resolution.y - 1.0, 0.0, 1.0);
   // Scale by display ratio to maintain 1:1 opengl to argand mapping
   coords = vec4(coords.x * (u_resolution.x / u_resolution.y), coords.yzw);
-  // Apply zoom 
+  // Apply zoom
   coords = vec4(coords.x / u_zoom, coords.y / u_zoom, coords.zw);
-  // Offset coords 
+  // Offset coords
   coords = vec4(coords.x - u_offset.x * (u_resolution.x / u_resolution.y) / u_zoom, coords.y - u_offset.y / u_zoom, coords.zw);
   */
 
-  // PIXEL to OPENGL 
+  // PIXEL to OPENGL
   vec4 coords = vec4(2.0f * gl_FragCoord.x / u_resolution.x - 1.0f, 2.0f * gl_FragCoord.y / u_resolution.y - 1.0f, 0.0f, 1.0f);
 
   // PIXEL to COMPLEX
@@ -94,14 +94,14 @@ void main(void)
     case 0:
       // Set Mandelbrot parameters
       // c
-      x0 = coords.x; 
+      x0 = coords.x;
       y0 = coords.y;
 
       // z_0
       if (u_experimental == 1)
       {
-        x = point.x; 
-        y = point.y; 
+        x = point.x;
+        y = point.y;
       }
       else
       {
@@ -109,16 +109,16 @@ void main(void)
         y = 0.0;
       }
       break;
-  
+
     case 1:
       // Set Julia parameters
       // z_0
-      x0 = point.x; 
+      x0 = point.x;
       y0 = point.y;
 
       // c
-      x = coords.x; 
-      y = coords.y; 
+      x = coords.x;
+      y = coords.y;
       break;
     default:
       break;

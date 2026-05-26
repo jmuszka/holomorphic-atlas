@@ -90,7 +90,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
           <input
             type="range"
             min="2"
-            max="10"
+            max="20"
             step="1"
             value={state.p}
             onChange={(e) =>
