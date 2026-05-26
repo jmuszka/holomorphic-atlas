@@ -84,6 +84,22 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
           />
         </div>
         <div className="flex flex-col my-1 text-white">
+          <p>
+            p-value: <b>{state.p}</b>
+          </p>
+          <input
+            type="range"
+            min="2"
+            max="10"
+            step="1"
+            value={state.p}
+            onChange={(e) =>
+              setState({ ...state, p: parseInt(e.target.value) })
+            }
+            className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+          />
+        </div>
+        <div className="flex flex-col my-1 text-white">
           <p>Coloring Algorithm:</p>
           <select
             value={state.coloringAlgorithm}

@@ -12,6 +12,7 @@ export type MapState = {
   zoom: number;
   dynamic: boolean;
   iterations: number;
+  p: number;
   experimental: boolean;
   coloringAlgorithm: ColoringAlgorithm;
 };
@@ -32,6 +33,7 @@ export const defaultState: MapState = {
   zoom: 1.0,
   dynamic: false,
   iterations: 500,
+  p: 2,
   experimental: true,
   coloringAlgorithm: ColoringAlgorithm.Continuous,
 };
@@ -66,6 +68,7 @@ const isValidState = (state: any): boolean => {
       state.zoom > 0 &&
       isBoolean(state.dynamic) &&
       isNumber(state.iterations) &&
+      isNumber(state.p) &&
       state.iterations > 0 &&
       isBoolean(state.experimental) &&
       isColoringAlgorithm(state.coloringAlgorithm)

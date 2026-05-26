@@ -20,6 +20,7 @@ export interface GLContext {
     view: WebGLUniformLocation;
     isMainView: WebGLUniformLocation;
     iterations: WebGLUniformLocation;
+    p: WebGLUniformLocation;
     experimental: WebGLUniformLocation;
     coloringAlgorithm: WebGLUniformLocation;
   };
@@ -109,6 +110,7 @@ export const initGL = (canvas: HTMLCanvasElement): GLContext | null => {
     view: gl.getUniformLocation(shaderProgram, "u_view")!,
     isMainView: gl.getUniformLocation(shaderProgram, "u_is_main_view")!,
     iterations: gl.getUniformLocation(shaderProgram, "u_max_iterations")!,
+    p: gl.getUniformLocation(shaderProgram, "u_p")!,
     experimental: gl.getUniformLocation(shaderProgram, "u_experimental")!,
     coloringAlgorithm: gl.getUniformLocation(
       shaderProgram,
@@ -171,6 +173,8 @@ export const render = (
   gl.uniform1i(uniformLocations.isMainView, isMainView ? 1 : 0);
 
   gl.uniform1i(uniformLocations.iterations, state.iterations);
+
+  gl.uniform1i(uniformLocations.p, state.p);
 
   gl.uniform1i(uniformLocations.experimental, state.experimental ? 1 : 0);
 

@@ -9,6 +9,7 @@ uniform vec2 u_offset;
 uniform float u_zoom;
 uniform int u_view;
 uniform int u_max_iterations;
+uniform int u_p;
 uniform int u_experimental;
 uniform int u_coloring_algorithm;
 out vec4 outputColor;
@@ -25,9 +26,22 @@ vec4 escape_time(float x, float y, float x0, float y0)
     if (x*x + y*y > 4.0 || iteration >= u_max_iterations) break;
 
     // Iterate recurrence relation
-    float xtemp = x*x - y*y + x0;
-    y = 2.0*x*y + y0;
-    x = xtemp;
+    float temp;
+    float a = x;
+    float b = y;
+
+    for (int j = 1; j < u_p; j++)
+    {
+      // Multiply
+      temp = a*x - b*y;
+      b = a*y + b*x;
+      a = temp;
+
+      // Add constant
+      x = a + x0;
+      y = b + y0;
+    }
+
     iteration++;
   }
 
