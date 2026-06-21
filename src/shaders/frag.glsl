@@ -56,8 +56,20 @@ vec4 escape_time(float x, float y, float x0, float y0)
 {
   int iteration = 0;
 
+  // Bounding-circle shortcut for any p (Mandelbrot view only).
+  // r_p = ((p-1)/p) * (1/p)^(1/(p-1)) is the radius of the largest open disk
+  // centered at the origin that lies entirely within the period-1 attractor region.
+  // Grows toward 1 as p --> infinity. Any c inside is provably non-escaping.
+  if (u_view == 0 && u_experimental == 0) {
+    float fp = float(u_p);
+    float rp = ((fp - 1.0) / fp) * pow(1.0 / fp, 1.0 / (fp - 1.0));
+    if (x0*x0 + y0*y0 < rp * rp) {
+      iteration = u_max_iterations;
+    }
+  }
+
   // Emulating z_{n+1} = z_{n}^2 + c where c := x + yi
-  for (int i = 0; i < INT_MAX; i++)
+  if (iteration < u_max_iterations) for (int i = 0; i < INT_MAX; i++)
   {
     // If diverges before iteration limit (modulus > p^2), exit loop
     if (x*x + y*y > float(u_p)*float(u_p) || iteration >= u_max_iterations) break;
