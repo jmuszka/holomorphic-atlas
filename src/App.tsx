@@ -11,7 +11,6 @@ import {
 import { Point, toComplex } from "./utils/position";
 import InfoMenu from "./components/info-menu";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
-import { isMobile } from "./utils/is-mobile";
 import { useApp } from "./stores/app-context";
 import ControlPanel from "./components/control-panel";
 import DPad from "./components/d-pad";
@@ -269,10 +268,6 @@ const App = () => {
     <>
       <Toast />
       <InfoMenu />
-      {!isMobile && (
-        <div id="#stats-container" className="fixed top right"></div>
-      )}
-
       {/* Main canvas */}
       <canvas
         id="main-canvas"

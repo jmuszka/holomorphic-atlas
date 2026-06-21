@@ -4,9 +4,6 @@ import { ColoringAlgorithm } from "../types/coloring-algorithm";
 import vertexShaderSource from "./vertex.glsl?url";
 import fragShaderSource from "./frag.glsl?url";
 
-import Stats from "stats-gl";
-import { isMobile } from "../utils/is-mobile";
-
 const vsSource = await fetch(vertexShaderSource).then((res) => res.text());
 const fsSource = await fetch(fragShaderSource).then((res) => res.text());
 
@@ -40,19 +37,6 @@ export interface GLContext {
     lutTex: WebGLTexture;
   };
 }
-
-// Performance monitoring
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let stats: any = new Stats({ trackGPU: true });
-const canvas = document.querySelector("#main-canvas");
-stats.dom.id = "stats";
-stats.dom.style.left = "";
-stats.dom.style.right = "270px";
-stats.dom.style.zIndex = "5";
-stats.init(canvas);
-
-if (!isMobile) document.body.appendChild(stats.dom);
-else stats = null;
 
 export const initGL = (canvas: HTMLCanvasElement): GLContext | null => {
   const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
@@ -363,8 +347,6 @@ export const render = (
   isMainView: boolean,
   tile?: { x: number; y: number; w: number; h: number },
 ) => {
-  stats?.begin();
-
   if (state.coloringAlgorithm === ColoringAlgorithm.Histogram) {
     renderHistogramPass1(glContext, state, isMainView);
     buildHistogramLUT(glContext, state);
@@ -385,7 +367,4 @@ export const render = (
     gl.drawElements(gl.TRIANGLES, indexCount, gl.UNSIGNED_SHORT, 0);
     if (tile) gl.disable(gl.SCISSOR_TEST);
   }
-
-  stats?.end();
-  stats?.update();
 };
