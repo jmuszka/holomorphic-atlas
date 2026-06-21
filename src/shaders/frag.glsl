@@ -17,6 +17,40 @@ uniform sampler2D u_lut;
 uniform int u_lut_size;
 out vec4 outputColor;
 
+vec3 hsv2rgb(vec3 c) {
+  vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+vec3 lch2rgb(vec3 lch) {
+  // LCH → LAB
+  float h = lch.z * 3.14159265 / 180.0;
+  vec3 lab = vec3(lch.x, lch.y * cos(h), lch.y * sin(h));
+
+  // LAB → XYZ (D65 white point)
+  float fy = (lab.x + 16.0) / 116.0;
+  float fx = lab.y / 500.0 + fy;
+  float fz = fy - lab.z / 200.0;
+  const float d = 6.0 / 29.0;
+  float x = fx > d ? fx*fx*fx : 3.0*d*d*(fx - 4.0/29.0);
+  float y = fy > d ? fy*fy*fy : 3.0*d*d*(fy - 4.0/29.0);
+  float z = fz > d ? fz*fz*fz : 3.0*d*d*(fz - 4.0/29.0);
+  vec3 xyz = vec3(x * 0.95047, y * 1.00000, z * 1.08883);
+
+  // XYZ → linear sRGB
+  vec3 lin;
+  lin.r =  3.2406*xyz.x - 1.5372*xyz.y - 0.4986*xyz.z;
+  lin.g = -0.9689*xyz.x + 1.8758*xyz.y + 0.0415*xyz.z;
+  lin.b =  0.0557*xyz.x - 0.2040*xyz.y + 1.0570*xyz.z;
+
+  // Linear → gamma-corrected sRGB, clamped to [0,1]
+  lin = clamp(lin, 0.0, 1.0);
+  vec3 lo = lin * 12.92;
+  vec3 hi = 1.055 * pow(lin, vec3(1.0 / 2.4)) - 0.055;
+  return mix(lo, hi, step(vec3(0.0031308), lin));
+}
+
 // The idea beind this algorithm is to count how many iterations of the recursive relation it takes to make the point on the screen diverge. If it doesn't diverge before the maximum iteration limit, we assume it is in the Mandelbrot set. Points are colored according to their divergence speed
 vec4 escape_time(float x, float y, float x0, float y0)
 {
@@ -82,6 +116,32 @@ vec4 escape_time(float x, float y, float x0, float y0)
         float t = fract(mu * 0.05);
         vec3 rgb = 0.5 + 0.5 * tan(6.28318 * (t + vec3(0.0, 0.33, 0.67)));
         color = vec4(rgb, 1.0);
+      }
+      break;
+    case 2: // HSV (smooth hue cycle)
+      if (iteration >= u_max_iterations) {
+        color = vec4(0.0, 0.0, 0.0, 1.0);
+      } else {
+        float log_zn = 0.5 * log(x*x + y*y);
+        float log_p  = log(float(u_p));
+        float nu     = log(log_zn / log_p) / log_p;
+        float mu     = float(iteration) + 1.0 - nu;
+
+        float hue = fract(mu * 0.05);
+        color = vec4(hsv2rgb(vec3(hue, 1.0, 1.0)), 1.0);
+      }
+      break;
+    case 3: // LCH (perceptually uniform hue cycle)
+      if (iteration >= u_max_iterations) {
+        color = vec4(0.0, 0.0, 0.0, 1.0);
+      } else {
+        float log_zn = 0.5 * log(x*x + y*y);
+        float log_p  = log(float(u_p));
+        float nu     = log(log_zn / log_p) / log_p;
+        float mu     = float(iteration) + 1.0 - nu;
+
+        float hue = fract(mu * 0.05) * 360.0;
+        color = vec4(lch2rgb(vec3(70.0, 60.0, hue)), 1.0);
       }
       break;
     default:
