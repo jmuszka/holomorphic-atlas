@@ -2,6 +2,8 @@
 
 Holomorphic Atlas is an interactive fractal explorer built with **React**, **TypeScript**, and **OpenGL** (WebGL). It provides a real-time visualization of complex dynamics, specifically the **Mandelbrot set** and its corresponding **Julia sets**.
 
+<img width="2880" height="1620" alt="Screenshot From 2026-06-21 00-55-04" src="https://github.com/user-attachments/assets/7dc491b3-ba1a-456f-b86a-9bf001ccd87c" />
+
 ## Features
 
 - **High-Performance Rendering**: Utilizes custom GLSL fragment shaders for smooth, real-time fractal generation.
@@ -11,6 +13,8 @@ Holomorphic Atlas is an interactive fractal explorer built with **React**, **Typ
   - **Navigation**: Intuitive zoom (scroll) and pan (drag) controls to explore the recursive fractal pattern.
 - **State Persistence**: Current view parameters (position, zoom, point) are saved in the URL, making it easy to share specific fractal configurations.
 - **Modern UI**: Includes a draggable control panel for real-time adjustments and state monitoring.
+- 
+<img width="2880" height="1620" alt="Screenshot From 2026-06-21 00-55-34" src="https://github.com/user-attachments/assets/6f120d58-3532-49a9-82ec-37458d5305aa" />
 
 ## Getting Started
 
@@ -48,6 +52,8 @@ The application will be available at `http://localhost:5173`.
 - `npm run lint`: Run ESLint to check for code quality.
 - `npm run format`: Format the codebase using Prettier.
 - `npm run preview`: Preview the production build locally.
+
+<img width="2880" height="1620" alt="Screenshot From 2026-06-21 00-56-15" src="https://github.com/user-attachments/assets/50cf82a3-c229-4bf4-a07f-fc258518ea3a" />
 
 ## Technical Details
 
