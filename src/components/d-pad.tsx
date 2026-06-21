@@ -56,7 +56,7 @@ const DPad = () => {
       >
         <ChevronLeft size={24} />
       </button>
-      <div className="flex items-center justify-center text-[10px] text-gray-300 font-bold">
+      <div className="flex items-center justify-center text-[10px] text-gray-300 font-bold select-none">
         PAN
       </div>
       <button

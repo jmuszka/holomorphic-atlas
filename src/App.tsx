@@ -1,6 +1,13 @@
 import { useRef, useEffect, useState, useMemo } from "react";
 import Toast from "./components/toast";
-import { render, initGL, type GLContext } from "./shaders/render";
+import {
+  render,
+  renderHistogramPass1,
+  buildHistogramLUT,
+  renderHistogramPass2,
+  initGL,
+  type GLContext,
+} from "./shaders/render";
 import { Point, toComplex } from "./utils/position";
 import InfoMenu from "./components/info-menu";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
@@ -10,6 +17,7 @@ import ControlPanel from "./components/control-panel";
 import DPad from "./components/d-pad";
 import ZoomControls from "./components/zoom-controls";
 import { Set } from "./types/set";
+import { ColoringAlgorithm } from "./types/coloring-algorithm";
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -84,24 +92,162 @@ const App = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, [setState]);
 
-  // OpenGL rendering for each canvas
+  const stateRef = useRef(state);
+  const dirtyRef = useRef(true);
+  const tileRef = useRef(0);
+  const tileOrderRef = useRef<number[]>([]);
+  const miniTileRef = useRef(0);
+  const miniTileOrderRef = useRef<number[]>([]);
+  const histoPhaseRef = useRef(0);
+  const miniHistoPhaseRef = useRef(0);
+
+  // Sync latest state into ref so the rAF loop always sees it without re-subscribing
   useEffect(() => {
-    const initOrUpdateGL = (
+    stateRef.current = state;
+    dirtyRef.current = true;
+  }, [state]);
+
+  // rAF loop: renders the main canvas in TILE_SIZE×TILE_SIZE tiles, TILES_PER_FRAME
+  // per frame, so heavy renders stay responsive and can't trigger GPU timeout
+  useEffect(() => {
+    const TILE_SIZE = 128;
+    const TILES_PER_FRAME = 4;
+
+    const ensureGL = (
       ref: React.RefObject<HTMLCanvasElement | null>,
       glRef: React.MutableRefObject<GLContext | null>,
-      isMain: boolean,
     ) => {
-      if (ref.current) {
-        if (!glRef.current || glRef.current.gl.canvas !== ref.current) {
-          glRef.current = initGL(ref.current);
-        }
-        if (glRef.current) render(glRef.current, state, isMain);
+      if (
+        ref.current &&
+        (!glRef.current || glRef.current.gl.canvas !== ref.current)
+      ) {
+        glRef.current = initGL(ref.current);
       }
     };
 
-    initOrUpdateGL(canvasRef, mainGLRef, true);
-    initOrUpdateGL(miniCanvasRef, miniGLRef, false);
-  }, [state]);
+    const buildOrder = (w: number, h: number) => {
+      const cols = Math.ceil(w / TILE_SIZE);
+      const rows = Math.ceil(h / TILE_SIZE);
+      const cx = (cols - 1) / 2;
+      const cy = (rows - 1) / 2;
+      return Array.from({ length: cols * rows }, (_, i) => i).sort((a, b) => {
+        const ax = (a % cols) - cx,
+          ay = Math.floor(a / cols) - cy;
+        const bx = (b % cols) - cx,
+          by = Math.floor(b / cols) - cy;
+        return ax * ax + ay * ay - (bx * bx + by * by);
+      });
+    };
+
+    // Render up to TILES_PER_FRAME tiles using the provided per-tile function.
+    // Returns true when all tiles for this canvas are done.
+    const renderTiles = (
+      canvas: HTMLCanvasElement,
+      tileIdxRef: React.MutableRefObject<number>,
+      orderRef: React.MutableRefObject<number[]>,
+      renderTile: (tile: {
+        x: number;
+        y: number;
+        w: number;
+        h: number;
+      }) => void,
+    ): boolean => {
+      const cols = Math.ceil(canvas.width / TILE_SIZE);
+      const total = cols * Math.ceil(canvas.height / TILE_SIZE);
+      for (let i = 0; i < TILES_PER_FRAME && tileIdxRef.current < total; i++) {
+        const t = orderRef.current[tileIdxRef.current++];
+        const col = t % cols;
+        const row = Math.floor(t / cols);
+        renderTile({
+          x: col * TILE_SIZE,
+          y: row * TILE_SIZE,
+          w: Math.min(TILE_SIZE, canvas.width - col * TILE_SIZE),
+          h: Math.min(TILE_SIZE, canvas.height - row * TILE_SIZE),
+        });
+      }
+      return tileIdxRef.current >= total;
+    };
+
+    let rafId: number;
+    const loop = () => {
+      ensureGL(canvasRef, mainGLRef);
+      ensureGL(miniCanvasRef, miniGLRef);
+      const glCtx = mainGLRef.current;
+      const miniGlCtx = miniGLRef.current;
+      const canvas = canvasRef.current;
+      const miniCanvas = miniCanvasRef.current;
+
+      if (dirtyRef.current) {
+        dirtyRef.current = false;
+        tileRef.current = 0;
+        miniTileRef.current = 0;
+        histoPhaseRef.current = 0;
+        miniHistoPhaseRef.current = 0;
+        if (canvas)
+          tileOrderRef.current = buildOrder(canvas.width, canvas.height);
+        if (miniCanvas)
+          miniTileOrderRef.current = buildOrder(
+            miniCanvas.width,
+            miniCanvas.height,
+          );
+      }
+
+      const s = stateRef.current;
+
+      if (glCtx && canvas) {
+        if (s.coloringAlgorithm === ColoringAlgorithm.Histogram) {
+          if (histoPhaseRef.current === 0) {
+            const done = renderTiles(canvas, tileRef, tileOrderRef, (tile) =>
+              renderHistogramPass1(glCtx, s, true, tile),
+            );
+            if (done) {
+              buildHistogramLUT(glCtx, s);
+              histoPhaseRef.current = 1;
+              tileRef.current = 0;
+            }
+          } else {
+            renderTiles(canvas, tileRef, tileOrderRef, (tile) =>
+              renderHistogramPass2(glCtx, s, true, tile),
+            );
+          }
+        } else {
+          renderTiles(canvas, tileRef, tileOrderRef, (tile) =>
+            render(glCtx, s, true, tile),
+          );
+        }
+      }
+
+      if (miniGlCtx && miniCanvas) {
+        if (s.coloringAlgorithm === ColoringAlgorithm.Histogram) {
+          if (miniHistoPhaseRef.current === 0) {
+            const done = renderTiles(
+              miniCanvas,
+              miniTileRef,
+              miniTileOrderRef,
+              (tile) => renderHistogramPass1(miniGlCtx, s, false, tile),
+            );
+            if (done) {
+              buildHistogramLUT(miniGlCtx, s);
+              miniHistoPhaseRef.current = 1;
+              miniTileRef.current = 0;
+            }
+          } else {
+            renderTiles(miniCanvas, miniTileRef, miniTileOrderRef, (tile) =>
+              renderHistogramPass2(miniGlCtx, s, false, tile),
+            );
+          }
+        } else {
+          renderTiles(miniCanvas, miniTileRef, miniTileOrderRef, (tile) =>
+            render(miniGlCtx, s, false, tile),
+          );
+        }
+      }
+
+      rafId = requestAnimationFrame(loop);
+    };
+    rafId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
 
   const exportPng = () => {
     const canvas = canvasRef.current;

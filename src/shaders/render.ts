@@ -55,7 +55,7 @@ if (!isMobile) document.body.appendChild(stats.dom);
 else stats = null;
 
 export const initGL = (canvas: HTMLCanvasElement): GLContext | null => {
-  const gl = canvas.getContext("webgl2");
+  const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
 
   if (!gl) {
     console.error("WebGL not supported");
@@ -183,165 +183,209 @@ export const initGL = (canvas: HTMLCanvasElement): GLContext | null => {
   };
 };
 
-export const render = (
+// Upload program, buffers, and all uniforms — shared by all render paths
+const setupDraw = (
   glContext: GLContext,
   state: MapState,
   isMainView: boolean,
 ) => {
-  stats?.begin(); // begin performance monitoring
-
-  const { gl, program, uniformLocations, buffers, indexCount } = glContext;
+  const { gl, program, uniformLocations, buffers } = glContext;
   const canvas = gl.canvas as HTMLCanvasElement;
-
   gl.useProgram(program);
-
   gl.bindBuffer(gl.ARRAY_BUFFER, buffers.vertex);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.index);
-
-  const coordinates = gl.getAttribLocation(program, "coordinates");
-  gl.vertexAttribPointer(coordinates, 3, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(coordinates);
-
+  const coord = gl.getAttribLocation(program, "coordinates");
+  gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(coord);
   gl.uniform2f(uniformLocations.resolution, canvas.width, canvas.height);
-
   gl.uniform2f(
     uniformLocations.input,
     state.mousePosition.openGl().x,
     state.mousePosition.openGl().y,
   );
-
   gl.uniform2f(
     uniformLocations.offset,
     state.canvasOffset.openGl().x,
     state.canvasOffset.openGl().y,
   );
-
   gl.uniform1f(uniformLocations.zoom, state.zoom);
-
   gl.uniform1i(
     uniformLocations.view,
     isMainView ? state.view.main : state.view.mini,
   );
-
   gl.uniform1i(uniformLocations.isMainView, isMainView ? 1 : 0);
-
   gl.uniform1i(uniformLocations.iterations, state.iterations);
-
   gl.uniform1i(uniformLocations.p, state.p);
-
   gl.uniform1i(uniformLocations.experimental, state.experimental ? 1 : 0);
-
   gl.uniform1i(uniformLocations.coloringAlgorithm, state.coloringAlgorithm);
+};
 
-  if (state.coloringAlgorithm === ColoringAlgorithm.Histogram) {
-    const { fb, iterTex, iterTexSize, lutTex } = glContext.histogram;
-    const gl2 = gl as unknown as WebGL2RenderingContext;
+// Histogram pass 1: render packed iteration counts into the offscreen FBO.
+// Supports an optional tile scissor for center-outward batched rendering.
+export const renderHistogramPass1 = (
+  glContext: GLContext,
+  state: MapState,
+  isMainView: boolean,
+  tile?: { x: number; y: number; w: number; h: number },
+) => {
+  const { gl, uniformLocations, indexCount } = glContext;
+  const { fb, iterTex, iterTexSize, lutTex } = glContext.histogram;
+  const canvas = gl.canvas as HTMLCanvasElement;
+  setupDraw(glContext, state, isMainView);
 
-    // Resize iteration-count texture if the canvas size changed
-    if (
-      iterTexSize.width !== canvas.width ||
-      iterTexSize.height !== canvas.height
-    ) {
-      gl.bindTexture(gl.TEXTURE_2D, iterTex);
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA,
-        canvas.width,
-        canvas.height,
-        0,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        null,
-      );
-      iterTexSize.width = canvas.width;
-      iterTexSize.height = canvas.height;
-    }
-
-    // Bind lutTex to TEXTURE0 before pass 1 — iterTex must not be bound to any
-    // sampler unit while it is also the framebuffer render target (feedback loop).
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, lutTex);
-
-    // Pass 1: render packed iteration counts to offscreen framebuffer
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-    gl.framebufferTexture2D(
-      gl.FRAMEBUFFER,
-      gl.COLOR_ATTACHMENT0,
+  if (
+    iterTexSize.width !== canvas.width ||
+    iterTexSize.height !== canvas.height
+  ) {
+    gl.bindTexture(gl.TEXTURE_2D, iterTex);
+    gl.texImage2D(
       gl.TEXTURE_2D,
-      iterTex,
       0,
-    );
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.uniform1i(uniformLocations.histogramPass, 0);
-    gl.drawElements(gl.TRIANGLES, indexCount, gl.UNSIGNED_SHORT, 0);
-
-    // Read back iteration counts (R = low byte, G = high byte → iter = R + G*256)
-    const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-    gl.readPixels(
-      0,
-      0,
+      gl.RGBA,
       canvas.width,
       canvas.height,
+      0,
       gl.RGBA,
       gl.UNSIGNED_BYTE,
-      pixels,
+      null,
     );
+    iterTexSize.width = canvas.width;
+    iterTexSize.height = canvas.height;
+  }
+  // Bind lutTex to TEXTURE0 — iterTex must not be on any sampler unit while it
+  // is the framebuffer render target (WebGL feedback loop).
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, lutTex);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+  gl.framebufferTexture2D(
+    gl.FRAMEBUFFER,
+    gl.COLOR_ATTACHMENT0,
+    gl.TEXTURE_2D,
+    iterTex,
+    0,
+  );
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  if (tile) {
+    gl.enable(gl.SCISSOR_TEST);
+    gl.scissor(tile.x, tile.y, tile.w, tile.h);
+  }
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.uniform1i(uniformLocations.histogramPass, 0);
+  gl.drawElements(gl.TRIANGLES, indexCount, gl.UNSIGNED_SHORT, 0);
+  if (tile) gl.disable(gl.SCISSOR_TEST);
+};
 
-    // Build histogram then compute CDF
-    const maxIter = state.iterations;
-    const histogram = new Int32Array(maxIter);
-    let total = 0;
-    for (let i = 0; i < pixels.length; i += 4) {
-      const iter = pixels[i] + pixels[i + 1] * 256;
-      if (iter < maxIter) {
-        histogram[iter]++;
-        total++;
-      }
+// Read back the full FBO, build the CDF, and upload it as the LUT texture.
+// Must be called after all pass-1 tiles are complete.
+export const buildHistogramLUT = (glContext: GLContext, state: MapState) => {
+  const { gl } = glContext;
+  const { fb, lutTex } = glContext.histogram;
+  const canvas = gl.canvas as HTMLCanvasElement;
+  const gl2 = gl as unknown as WebGL2RenderingContext;
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+  const pixels = new Uint8Array(canvas.width * canvas.height * 4);
+  gl.readPixels(
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    pixels,
+  );
+
+  const maxIter = state.iterations;
+  const hist = new Int32Array(maxIter);
+  let total = 0;
+  for (let i = 0; i < pixels.length; i += 4) {
+    const iter = pixels[i] + pixels[i + 1] * 256;
+    if (iter < maxIter) {
+      hist[iter]++;
+      total++;
     }
-    const lut = new Float32Array(maxIter);
-    let cumulative = 0;
-    for (let i = 0; i < maxIter; i++) {
-      cumulative += histogram[i];
-      lut[i] = total > 0 ? cumulative / total : 0;
-    }
-
-    // Upload CDF as a maxIter×1 float texture
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, lutTex);
-    gl2.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl2.R32F,
-      maxIter,
-      1,
-      0,
-      gl2.RED,
-      gl.FLOAT,
-      lut,
-    );
-
-    // Pass 2: render final colors to screen using LUT
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.clearColor(0.5, 0.5, 1.0, 0.9);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.uniform1i(uniformLocations.histogramPass, 1);
-    gl.uniform1i(uniformLocations.lut, 0);
-    gl.uniform1i(uniformLocations.lutSize, maxIter);
-    gl.drawElements(gl.TRIANGLES, indexCount, gl.UNSIGNED_SHORT, 0);
-  } else {
-    gl.uniform1i(uniformLocations.histogramPass, 0);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.clearColor(0.5, 0.5, 1.0, 0.9);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.drawElements(gl.TRIANGLES, indexCount, gl.UNSIGNED_SHORT, 0);
+  }
+  const lut = new Float32Array(maxIter);
+  let cumulative = 0;
+  for (let i = 0; i < maxIter; i++) {
+    cumulative += hist[i];
+    lut[i] = total > 0 ? cumulative / total : 0;
   }
 
-  // Publish performance metrics
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, lutTex);
+  gl2.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl2.R32F,
+    maxIter,
+    1,
+    0,
+    gl2.RED,
+    gl.FLOAT,
+    lut,
+  );
+};
+
+// Histogram pass 2: render final colors to the screen using the LUT.
+// Supports an optional tile scissor for center-outward batched rendering.
+export const renderHistogramPass2 = (
+  glContext: GLContext,
+  state: MapState,
+  isMainView: boolean,
+  tile?: { x: number; y: number; w: number; h: number },
+) => {
+  const { gl, uniformLocations, indexCount } = glContext;
+  const canvas = gl.canvas as HTMLCanvasElement;
+  setupDraw(glContext, state, isMainView);
+
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, glContext.histogram.lutTex);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  if (tile) {
+    gl.enable(gl.SCISSOR_TEST);
+    gl.scissor(tile.x, tile.y, tile.w, tile.h);
+  }
+  gl.clearColor(0.5, 0.5, 1.0, 0.9);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.uniform1i(uniformLocations.histogramPass, 1);
+  gl.uniform1i(uniformLocations.lut, 0);
+  gl.uniform1i(uniformLocations.lutSize, state.iterations);
+  gl.drawElements(gl.TRIANGLES, indexCount, gl.UNSIGNED_SHORT, 0);
+  if (tile) gl.disable(gl.SCISSOR_TEST);
+};
+
+export const render = (
+  glContext: GLContext,
+  state: MapState,
+  isMainView: boolean,
+  tile?: { x: number; y: number; w: number; h: number },
+) => {
+  stats?.begin();
+
+  if (state.coloringAlgorithm === ColoringAlgorithm.Histogram) {
+    renderHistogramPass1(glContext, state, isMainView);
+    buildHistogramLUT(glContext, state);
+    renderHistogramPass2(glContext, state, isMainView);
+  } else {
+    const { gl, uniformLocations, indexCount } = glContext;
+    const canvas = gl.canvas as HTMLCanvasElement;
+    setupDraw(glContext, state, isMainView);
+    gl.uniform1i(uniformLocations.histogramPass, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (tile) {
+      gl.enable(gl.SCISSOR_TEST);
+      gl.scissor(tile.x, tile.y, tile.w, tile.h);
+    }
+    gl.clearColor(0.5, 0.5, 1.0, 0.9);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawElements(gl.TRIANGLES, indexCount, gl.UNSIGNED_SHORT, 0);
+    if (tile) gl.disable(gl.SCISSOR_TEST);
+  }
+
   stats?.end();
   stats?.update();
 };
