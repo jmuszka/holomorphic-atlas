@@ -12,6 +12,9 @@ uniform int u_max_iterations;
 uniform int u_p;
 uniform int u_experimental;
 uniform int u_coloring_algorithm;
+uniform int u_histogram_pass;
+uniform sampler2D u_lut;
+uniform int u_lut_size;
 out vec4 outputColor;
 
 // The idea beind this algorithm is to count how many iterations of the recursive relation it takes to make the point on the screen diverge. If it doesn't diverge before the maximum iteration limit, we assume it is in the Mandelbrot set. Points are colored according to their divergence speed
@@ -53,15 +56,28 @@ vec4 escape_time(float x, float y, float x0, float y0)
   vec4 color;
   switch (u_coloring_algorithm)
   {
+    case 0: // Histogram (equalized escape time)
+      if (u_histogram_pass == 0) {
+        // Pack 16-bit iteration count into RG for CPU readback
+        color = vec4(float(iteration % 256) / 255.0, float(iteration / 256) / 255.0, 0.0, 1.0);
+      } else {
+        if (iteration >= u_max_iterations) {
+          color = vec4(0.0, 0.0, 0.0, 1.0);
+        } else {
+          float t = texture(u_lut, vec2((float(iteration) + 0.5) / float(u_lut_size), 0.5)).r;
+          vec3 rgb = 0.5 + 0.5 * tan(6.28318 * (t + vec3(0.0, 0.33, 0.67)));
+          color = vec4(rgb, 1.0);
+        }
+      }
+      break;
     case 1: // Continuous (smooth escape time)
       if (iteration >= u_max_iterations) {
         color = vec4(0.0, 0.0, 0.0, 1.0);
       } else {
-        // Compute potential function based on input and escape velocity
         float log_zn = 0.5 * log(x*x + y*y);
         float log_p = log(float(u_p));
-        float nu = log(log_zn / log_p) / log_p; // fractional correction
-        float mu = float(iteration) + 1.0 - nu; // smooth iteration count
+        float nu = log(log_zn / log_p) / log_p;
+        float mu = float(iteration) + 1.0 - nu;
 
         float t = fract(mu * 0.05);
         vec3 rgb = 0.5 + 0.5 * tan(6.28318 * (t + vec3(0.0, 0.33, 0.67)));
