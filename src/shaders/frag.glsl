@@ -53,10 +53,20 @@ vec4 escape_time(float x, float y, float x0, float y0)
   vec4 color;
   switch (u_coloring_algorithm)
   {
-    case 1: // Continuous
-      if (iteration >= u_max_iterations) color = vec4(0.0, 0.0, 0.0, 1.0);
-      else if (iteration >= u_max_iterations/10) color = vec4(1.0, 1.0, 0.5, 1.0);
-      else color = vec4(0.004, 0.024, 0.243, 1.0);
+    case 1: // Continuous (smooth escape time)
+      if (iteration >= u_max_iterations) {
+        color = vec4(0.0, 0.0, 0.0, 1.0);
+      } else {
+        // Compute potential function based on input and escape velocity
+        float log_zn = 0.5 * log(x*x + y*y);
+        float log_p = log(float(u_p));
+        float nu = log(log_zn / log_p) / log_p; // fractional correction
+        float mu = float(iteration) + 1.0 - nu; // smooth iteration count
+
+        float t = fract(mu * 0.05);
+        vec3 rgb = 0.5 + 0.5 * tan(6.28318 * (t + vec3(0.0, 0.33, 0.67)));
+        color = vec4(rgb, 1.0);
+      }
       break;
     default:
       color = iteration < u_max_iterations ? vec4(0.0, 0.0, 0.0, 1.0) : vec4(1.0);
