@@ -176,69 +176,93 @@ const App = () => {
       const canvas = canvasRef.current;
       const miniCanvas = miniCanvasRef.current;
 
-      if (dirtyRef.current) {
-        dirtyRef.current = false;
-        tileRef.current = 0;
-        miniTileRef.current = 0;
-        histoPhaseRef.current = 0;
-        miniHistoPhaseRef.current = 0;
-        if (canvas)
-          tileOrderRef.current = buildOrder(canvas.width, canvas.height);
-        if (miniCanvas)
-          miniTileOrderRef.current = buildOrder(
-            miniCanvas.width,
-            miniCanvas.height,
-          );
-      }
-
       const s = stateRef.current;
 
-      if (glCtx && canvas) {
-        if (s.coloringAlgorithm === ColoringAlgorithm.Histogram) {
-          if (histoPhaseRef.current === 0) {
-            const done = renderTiles(canvas, tileRef, tileOrderRef, (tile) =>
-              renderHistogramPass1(glCtx, s, true, tile),
+      if (s.batchRendering) {
+        if (dirtyRef.current) {
+          dirtyRef.current = false;
+          tileRef.current = 0;
+          miniTileRef.current = 0;
+          histoPhaseRef.current = 0;
+          miniHistoPhaseRef.current = 0;
+          if (canvas)
+            tileOrderRef.current = buildOrder(canvas.width, canvas.height);
+          if (miniCanvas)
+            miniTileOrderRef.current = buildOrder(
+              miniCanvas.width,
+              miniCanvas.height,
             );
-            if (done) {
-              buildHistogramLUT(glCtx, s);
-              histoPhaseRef.current = 1;
-              tileRef.current = 0;
+        }
+
+        if (glCtx && canvas) {
+          if (s.coloringAlgorithm === ColoringAlgorithm.Histogram) {
+            if (histoPhaseRef.current === 0) {
+              const done = renderTiles(canvas, tileRef, tileOrderRef, (tile) =>
+                renderHistogramPass1(glCtx, s, true, tile),
+              );
+              if (done) {
+                buildHistogramLUT(glCtx, s);
+                histoPhaseRef.current = 1;
+                tileRef.current = 0;
+              }
+            } else {
+              renderTiles(canvas, tileRef, tileOrderRef, (tile) =>
+                renderHistogramPass2(glCtx, s, true, tile),
+              );
             }
           } else {
             renderTiles(canvas, tileRef, tileOrderRef, (tile) =>
-              renderHistogramPass2(glCtx, s, true, tile),
+              render(glCtx, s, true, tile),
             );
           }
-        } else {
-          renderTiles(canvas, tileRef, tileOrderRef, (tile) =>
-            render(glCtx, s, true, tile),
-          );
         }
-      }
 
-      if (miniGlCtx && miniCanvas) {
-        if (s.coloringAlgorithm === ColoringAlgorithm.Histogram) {
-          if (miniHistoPhaseRef.current === 0) {
-            const done = renderTiles(
-              miniCanvas,
-              miniTileRef,
-              miniTileOrderRef,
-              (tile) => renderHistogramPass1(miniGlCtx, s, false, tile),
-            );
-            if (done) {
-              buildHistogramLUT(miniGlCtx, s);
-              miniHistoPhaseRef.current = 1;
-              miniTileRef.current = 0;
+        if (miniGlCtx && miniCanvas) {
+          if (s.coloringAlgorithm === ColoringAlgorithm.Histogram) {
+            if (miniHistoPhaseRef.current === 0) {
+              const done = renderTiles(
+                miniCanvas,
+                miniTileRef,
+                miniTileOrderRef,
+                (tile) => renderHistogramPass1(miniGlCtx, s, false, tile),
+              );
+              if (done) {
+                buildHistogramLUT(miniGlCtx, s);
+                miniHistoPhaseRef.current = 1;
+                miniTileRef.current = 0;
+              }
+            } else {
+              renderTiles(miniCanvas, miniTileRef, miniTileOrderRef, (tile) =>
+                renderHistogramPass2(miniGlCtx, s, false, tile),
+              );
             }
           } else {
             renderTiles(miniCanvas, miniTileRef, miniTileOrderRef, (tile) =>
-              renderHistogramPass2(miniGlCtx, s, false, tile),
+              render(miniGlCtx, s, false, tile),
             );
           }
-        } else {
-          renderTiles(miniCanvas, miniTileRef, miniTileOrderRef, (tile) =>
-            render(miniGlCtx, s, false, tile),
-          );
+        }
+      } else {
+        if (dirtyRef.current) {
+          dirtyRef.current = false;
+          if (glCtx && canvas) {
+            if (s.coloringAlgorithm === ColoringAlgorithm.Histogram) {
+              renderHistogramPass1(glCtx, s, true);
+              buildHistogramLUT(glCtx, s);
+              renderHistogramPass2(glCtx, s, true);
+            } else {
+              render(glCtx, s, true);
+            }
+          }
+          if (miniGlCtx && miniCanvas) {
+            if (s.coloringAlgorithm === ColoringAlgorithm.Histogram) {
+              renderHistogramPass1(miniGlCtx, s, false);
+              buildHistogramLUT(miniGlCtx, s);
+              renderHistogramPass2(miniGlCtx, s, false);
+            } else {
+              render(miniGlCtx, s, false);
+            }
+          }
         }
       }
 

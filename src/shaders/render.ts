@@ -24,6 +24,7 @@ export interface GLContext {
     histogramPass: WebGLUniformLocation;
     lut: WebGLUniformLocation;
     lutSize: WebGLUniformLocation;
+    antialiasing: WebGLUniformLocation;
   };
   buffers: {
     vertex: WebGLBuffer;
@@ -113,6 +114,7 @@ export const initGL = (canvas: HTMLCanvasElement): GLContext | null => {
     histogramPass: gl.getUniformLocation(shaderProgram, "u_histogram_pass")!,
     lut: gl.getUniformLocation(shaderProgram, "u_lut")!,
     lutSize: gl.getUniformLocation(shaderProgram, "u_lut_size")!,
+    antialiasing: gl.getUniformLocation(shaderProgram, "u_antialiasing")!,
   };
 
   // Histogram resources
@@ -202,6 +204,7 @@ const setupDraw = (
   gl.uniform1i(uniformLocations.p, state.p);
   gl.uniform1i(uniformLocations.experimental, state.experimental ? 1 : 0);
   gl.uniform1i(uniformLocations.coloringAlgorithm, state.coloringAlgorithm);
+  gl.uniform1i(uniformLocations.antialiasing, state.antialiasing ? 1 : 0);
 };
 
 // Histogram pass 1: render packed iteration counts into the offscreen FBO.

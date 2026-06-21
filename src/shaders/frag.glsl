@@ -15,6 +15,7 @@ uniform int u_coloring_algorithm;
 uniform int u_histogram_pass;
 uniform sampler2D u_lut;
 uniform int u_lut_size;
+uniform int u_antialiasing;
 out vec4 outputColor;
 
 vec3 hsv2rgb(vec3 c) {
@@ -164,63 +165,44 @@ vec4 escape_time(float x, float y, float x0, float y0)
   return color;
 }
 
-void main(void)
+vec4 shade(vec2 fragCoord)
 {
-  /*
-  // Window-relative pixel to Argand-coords
-  vec4 coords = vec4(2.0*gl_FragCoord.x/u_resolution.x - 1.0, 2.0*gl_FragCoord.y/u_resolution.y - 1.0, 0.0, 1.0);
-  // Scale by display ratio to maintain 1:1 opengl to argand mapping
-  coords = vec4(coords.x * (u_resolution.x / u_resolution.y), coords.yzw);
-  // Apply zoom
-  coords = vec4(coords.x / u_zoom, coords.y / u_zoom, coords.zw);
-  // Offset coords
-  coords = vec4(coords.x - u_offset.x * (u_resolution.x / u_resolution.y) / u_zoom, coords.y - u_offset.y / u_zoom, coords.zw);
-  */
-
-  // PIXEL to OPENGL
-  vec4 coords = vec4(2.0f * gl_FragCoord.x / u_resolution.x - 1.0f, 2.0f * gl_FragCoord.y / u_resolution.y - 1.0f, 0.0f, 1.0f);
-
-  // PIXEL to COMPLEX
-  coords = vec4((u_resolution.x / u_resolution.y) * (coords.x - u_offset.x) / u_zoom, (coords.y - u_offset.y) / u_zoom, 0.0f, 1.0f);
-  // INPUT to COMPLEX
-  vec2 point = vec2((u_resolution.x / u_resolution.y) * (u_input.x - u_offset.x) / u_zoom, (u_input.y - u_offset.y) / u_zoom);
+  vec2 ndc = 2.0 * fragCoord / u_resolution - 1.0;
+  float aspect = u_resolution.x / u_resolution.y;
+  vec2 c = vec2(aspect * (ndc.x - u_offset.x) / u_zoom,
+                        (ndc.y - u_offset.y) / u_zoom);
+  vec2 point = vec2(aspect * (u_input.x - u_offset.x) / u_zoom,
+                            (u_input.y - u_offset.y) / u_zoom);
 
   float x, y, x0, y0;
-
   switch (u_view)
   {
     case 0:
-      // Set Mandelbrot parameters
-      // c
-      x0 = coords.x;
-      y0 = coords.y;
-
-      // z_0
-      if (u_experimental == 1)
-      {
-        x = point.x;
-        y = point.y;
-      }
-      else
-      {
-        x = 0.0;
-        y = 0.0;
-      }
+      x0 = c.x; y0 = c.y;
+      if (u_experimental == 1) { x = point.x; y = point.y; }
+      else                     { x = 0.0;     y = 0.0;     }
       break;
-
     case 1:
-      // Set Julia parameters
-      // z_0
-      x0 = point.x;
-      y0 = point.y;
-
-      // c
-      x = coords.x;
-      y = coords.y;
+      x0 = point.x; y0 = point.y;
+      x = c.x;      y = c.y;
       break;
     default:
+      x = x0 = y = y0 = 0.0;
       break;
-    }
+  }
+  return escape_time(x, y, x0, y0);
+}
 
-  outputColor = escape_time(x, y, x0, y0);
+void main(void)
+{
+  if (u_antialiasing == 1) {
+    // 2×2 rotated-grid SSAA: 4 sub-pixel samples averaged
+    vec4 color = shade(gl_FragCoord.xy + vec2(-0.25, -0.25))
+               + shade(gl_FragCoord.xy + vec2( 0.25, -0.25))
+               + shade(gl_FragCoord.xy + vec2(-0.25,  0.25))
+               + shade(gl_FragCoord.xy + vec2( 0.25,  0.25));
+    outputColor = color * 0.25;
+  } else {
+    outputColor = shade(gl_FragCoord.xy);
+  }
 }

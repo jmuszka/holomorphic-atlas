@@ -1,7 +1,13 @@
-import React, { useRef, useMemo, useEffect } from "react";
+import React, { useRef, useMemo, useEffect, useState } from "react";
 import Draggable from "react-draggable";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
-import { Share2, Download, Info } from "lucide-react";
+import {
+  Share2,
+  Download,
+  Info,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 import { useApp } from "../stores/app-context";
 import { defaultState, updateURLState } from "../stores/map-state";
 import { copy } from "../utils/clipboard";
@@ -25,6 +31,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
     enableTouchControls,
     setEnableTouchControls,
   } = useApp();
+
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const nodeRef = useRef(null);
   const pointRef = useRef(null);
@@ -84,22 +92,6 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
           />
         </div>
         <div className="flex flex-col my-1 text-white">
-          <p>
-            p-value: <b>{state.p}</b>
-          </p>
-          <input
-            type="range"
-            min="2"
-            max="20"
-            step="1"
-            value={state.p}
-            onChange={(e) =>
-              setState({ ...state, p: parseInt(e.target.value) })
-            }
-            className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-          />
-        </div>
-        <div className="flex flex-col my-1 text-white">
           <p>Coloring Algorithm:</p>
           <select
             value={state.coloringAlgorithm}
@@ -134,26 +126,6 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
         <div className="flex items-center justify-start gap-1 text-white">
           <button
             role="button"
-            onClick={() =>
-              setState({ ...state, experimental: !state.experimental })
-            }
-            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-              state.experimental ? "!bg-blue-500" : "!bg-gray-700"
-            }`}
-          >
-            <span
-              className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                state.experimental ? "translate-x-5" : "translate-x-1"
-              }`}
-            />
-          </button>
-          <p>
-            <span className="relative top-[2.5px]">Experimental?</span>
-          </p>
-        </div>
-        <div className="flex items-center justify-start gap-1 text-white">
-          <button
-            role="button"
             onClick={() => setEnableTouchControls(!enableTouchControls)}
             className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
               enableTouchControls ? "!bg-blue-500" : "!bg-gray-700"
@@ -169,6 +141,99 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ onExportPng }) => {
             <span className="relative top-[2.5px]">Touch controls?</span>
           </p>
         </div>
+
+        <button
+          className="flex items-center gap-1 text-white text-sm mt-2 hover:text-blue-300 transition-colors w-fit pl-1 pr-2"
+          onClick={() => setAdvancedOpen((o) => !o)}
+        >
+          {advancedOpen ? (
+            <ChevronDown size={14} />
+          ) : (
+            <ChevronRight size={14} />
+          )}
+          Advanced
+        </button>
+
+        {advancedOpen && (
+          <div className="flex flex-col gap-3 mt-1 pl-1 border-l border-gray-500/40">
+            <div className="flex flex-col text-white gap-1">
+              <p className="text-sm">
+                p-value: <b>{state.p}</b>
+              </p>
+              <input
+                type="range"
+                min="2"
+                max="16"
+                step="1"
+                value={state.p}
+                onChange={(e) =>
+                  setState({ ...state, p: parseInt(e.target.value) })
+                }
+                className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+            </div>
+            <div className="flex items-center justify-start gap-1 text-white">
+              <button
+                role="button"
+                onClick={() =>
+                  setState({ ...state, experimental: !state.experimental })
+                }
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                  state.experimental ? "!bg-blue-500" : "!bg-gray-700"
+                }`}
+              >
+                <span
+                  className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                    state.experimental ? "translate-x-5" : "translate-x-1"
+                  }`}
+                />
+              </button>
+              <span className="text-sm relative top-[2.5px]">
+                Experimental?
+              </span>
+            </div>
+            <div className="flex items-center justify-start gap-1 text-white">
+              <button
+                role="button"
+                onClick={() =>
+                  setState({ ...state, batchRendering: !state.batchRendering })
+                }
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                  state.batchRendering ? "!bg-blue-500" : "!bg-gray-700"
+                }`}
+              >
+                <span
+                  className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                    state.batchRendering ? "translate-x-5" : "translate-x-1"
+                  }`}
+                />
+              </button>
+              <span className="text-sm relative top-[2.5px]">
+                Optimized rendering
+              </span>
+            </div>
+            <div className="flex items-center justify-start gap-1 text-white">
+              <button
+                role="button"
+                onClick={() =>
+                  setState({ ...state, antialiasing: !state.antialiasing })
+                }
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                  state.antialiasing ? "!bg-blue-500" : "!bg-gray-700"
+                }`}
+              >
+                <span
+                  className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                    state.antialiasing ? "translate-x-5" : "translate-x-1"
+                  }`}
+                />
+              </button>
+              <span className="text-sm relative top-[2.5px]">
+                Anti-aliasing
+              </span>
+            </div>
+          </div>
+        )}
 
         <hr className="my-3 text-gray-400/30" />
 

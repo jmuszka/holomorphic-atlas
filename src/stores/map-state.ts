@@ -14,6 +14,8 @@ export type MapState = {
   iterations: number;
   p: number;
   experimental: boolean;
+  antialiasing: boolean;
+  batchRendering: boolean;
   coloringAlgorithm: ColoringAlgorithm;
 };
 
@@ -35,6 +37,8 @@ export const defaultState: MapState = {
   iterations: 500,
   p: 2,
   experimental: true,
+  antialiasing: false,
+  batchRendering: true,
   coloringAlgorithm: ColoringAlgorithm.Continuous,
 };
 
